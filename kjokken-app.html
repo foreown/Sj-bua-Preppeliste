@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Kjøkken</title>
+<meta name="theme-color" content="#C9CED1" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="Kjøkken" />
+
+<!-- React 18 + Supabase (UMD) + Babel 7 (classic JSX runtime). Loaded as classic scripts on purpose. -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2.45.0"></script>
+<script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#E7EBED; --surface:#FFFFFF; --ink:#161A1C; --muted:#6A7176;
+    --line:#E2E6E8; --line-strong:#D2D7DA;
+    --done:#13863F; --done-deep:#0F6E33; --done-tint:#EAF6EE;
+    --alert-ink:#B03A0C; --alert-bg:#FFF3E8; --alert-line:#F4D3B6;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --sans:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.4;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom);}
+  .wrap{max-width:580px;margin:0 auto;}
+
+  /* steel header */
+  .steel{position:sticky;top:0;z-index:20;padding-top:env(safe-area-inset-top);
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,0) 0, rgba(255,255,255,.28) 1px, rgba(0,0,0,.018) 2px, rgba(255,255,255,0) 3px),
+      linear-gradient(180deg,#DBE0E2 0%,#CBD0D3 46%,#C2C7CA 56%,#D4D8DA 100%);
+    border-bottom:1px solid var(--line-strong);box-shadow:0 2px 10px rgba(0,0,0,.08);}
+  .topbar{max-width:580px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:11px;padding:12px 16px;}
+  .brand{display:flex;flex-direction:column;gap:1px;min-width:0;}
+  .brand h1{margin:0;font-size:17px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#13171A;}
+  .brand .who{font-size:11px;color:#4C5358;letter-spacing:.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .who .role{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.9);padding:1px 6px;border-radius:99px;margin-left:6px;color:#3C4348;text-transform:uppercase;letter-spacing:.05em;}
+  .logout{flex:none;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5A6166;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.85);padding:8px 12px;border-radius:9px;cursor:pointer;}
+  .logout:active{transform:scale(.97);}
+
+  /* tabs */
+  .tabs{max-width:580px;margin:0 auto;display:flex;gap:7px;padding:12px 14px 4px;}
+  .tab{flex:1;text-align:center;font-size:13px;font-weight:700;letter-spacing:.03em;color:#6A7176;background:var(--surface);border:1px solid var(--line);padding:11px 8px;border-radius:11px;cursor:pointer;transition:all .15s ease;}
+  .tab.on{color:#fff;background:#262B2E;border-color:#262B2E;}
+
+  /* generic card / sections */
+  .pad{padding:12px 14px;}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .panel + .panel{margin-top:12px;}
+  .eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8A9197;margin-bottom:10px;}
+  .h2{font-size:16px;font-weight:700;margin:0 0 12px;letter-spacing:-.01em;}
+
+  label.fld{display:block;margin-bottom:11px;}
+  label.fld .lab{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;margin-bottom:5px;display:block;}
+  input.in{width:100%;font-family:var(--sans);font-size:16px;color:var(--ink);background:#FBFCFC;border:1.5px solid var(--line-strong);border-radius:10px;padding:12px 13px;outline:none;transition:border-color .15s ease;}
+  input.in:focus{border-color:var(--done);background:#fff;}
+  input.in::placeholder{color:#A9AFB3;}
+
+  .btn{appearance:none;border:none;cursor:pointer;font-family:var(--sans);font-weight:700;letter-spacing:.02em;border-radius:11px;transition:transform .1s ease,opacity .15s ease,background .15s ease;}
+  .btn:active{transform:scale(.98);}
+  .btn[disabled]{opacity:.55;cursor:default;}
+  .btn-primary{width:100%;background:var(--done);color:#fff;font-size:15px;padding:14px;}
+  .btn-primary:active{background:var(--done-deep);}
+  .btn-sm{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:9px 13px;background:#EEF1F2;color:#3C4348;border:1px solid var(--line);}
+  .btn-danger{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:9px 13px;background:#fff;color:var(--alert-ink);border:1px solid var(--alert-line);}
+  .btn-danger.armed{background:var(--alert-bg);}
+  .btn-sm.armed{background:var(--alert-bg);color:var(--alert-ink);border-color:var(--alert-line);}
+
+  .msg{font-size:13px;border-radius:10px;padding:10px 12px;margin-bottom:12px;}
+  .msg.err{background:var(--alert-bg);border:1px solid var(--alert-line);color:#8A2D08;}
+  .msg.ok{background:var(--done-tint);border:1px solid #CDE9D6;color:var(--done-deep);}
+  .msg.info{background:#EEF3F5;border:1px solid var(--line);color:#4C5358;}
+
+  /* prep list */
+  .row{margin-top:4px;font-family:var(--mono);font-size:12.5px;color:#4C5358;}
+  .plist{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+  .pitem{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:13px 13px;}
+  .pitem .check{flex:none;margin-top:1px;width:26px;height:26px;border-radius:8px;border:2px solid var(--line-strong);background:#fff;display:grid;place-items:center;cursor:pointer;transition:.15s;}
+  .pitem .check svg{width:15px;height:15px;stroke:#fff;stroke-width:3.4;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset .2s ease;}
+  .pitem.done .check{background:var(--done);border-color:var(--done);}
+  .pitem.done .check svg{stroke-dashoffset:0;}
+  .pbody{flex:1;min-width:0;cursor:pointer;}
+  .pbody .pt{font-size:15.5px;font-weight:600;letter-spacing:-.005em;}
+  .pitem.done .pbody .pt{color:#5C6B61;text-decoration:line-through;text-decoration-color:rgba(19,134,63,.5);text-decoration-thickness:2px;}
+  .pbody .pn{font-size:12.5px;color:var(--muted);margin-top:2px;}
+  .pmeta{font-size:11px;color:#9AA1A6;margin-top:5px;letter-spacing:.01em;}
+  .pdel{flex:none;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;color:#B7BDC1;display:grid;place-items:center;cursor:pointer;font-size:16px;line-height:1;transition:.15s;}
+  .pdel.armed{background:var(--alert-bg);border-color:var(--alert-line);color:var(--alert-ink);}
+  .empty{text-align:center;color:#9AA1A6;font-size:13.5px;padding:26px 10px;}
+
+  /* worker rows */
+  .wrow{display:flex;flex-direction:column;gap:10px;background:#FBFCFC;border:1px solid var(--line);border-radius:12px;padding:12px;}
+  .wrow + .wrow{margin-top:9px;}
+  .wtop{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .wname{font-size:15px;font-weight:700;}
+  .wuser{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:1px;}
+  .wactions{display:flex;gap:8px;flex-wrap:wrap;}
+  .pwline{display:flex;gap:8px;}
+  .pwline input{flex:1;}
+
+  /* login */
+  .login-hero{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;padding:24px 18px;}
+  .login-card{max-width:380px;width:100%;margin:0 auto;}
+  .login-card .logo{display:flex;flex-direction:column;align-items:center;margin-bottom:22px;}
+  .login-card .logo .mark{width:54px;height:54px;border-radius:15px;background:#262B2E;color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:22px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,.15);}
+  .login-card .logo h1{margin:0;font-size:20px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;}
+  .login-card .logo p{margin:3px 0 0;font-size:12.5px;color:var(--muted);}
+
+  .center-note{min-height:100dvh;display:grid;place-items:center;padding:24px;}
+  .foot-note{text-align:center;font-size:11px;color:#9AA1A6;padding:18px;}
+  @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+/* @jsxRuntime classic */
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ============ FYLL INN DINE TO VERDIER HER ============ */
+const SUPABASE_URL = "https://YOUR-PROJECT.supabase.co";
+const SUPABASE_ANON_KEY = "YOUR-ANON-KEY";
+/* ====================================================== */
+
+const CONFIGURED = !SUPABASE_URL.includes("YOUR-PROJECT") && !SUPABASE_ANON_KEY.includes("YOUR-ANON");
+const db = CONFIGURED ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+/* storage with in-memory fallback (preview sandbox blocks localStorage; Vercel is fine) */
+function makeStore(){
+  try{ const t="__t__"; localStorage.setItem(t,t); localStorage.removeItem(t); return localStorage; }
+  catch(e){ const m={}; return { getItem:k=>Object.prototype.hasOwnProperty.call(m,k)?m[k]:null, setItem:(k,v)=>{m[k]=String(v);}, removeItem:k=>{delete m[k];} }; }
+}
+const S = makeStore();
+const SKEY = "kitchen_session_v1";
+const loadSession = ()=>{ try{ const r=S.getItem(SKEY); return r?JSON.parse(r):null; }catch(e){ return null; } };
+const saveSession = s=>{ try{ S.setItem(SKEY, JSON.stringify(s)); }catch(e){} };
+const clearSession = ()=>{ try{ S.removeItem(SKEY); }catch(e){} };
+
+async function rpc(fn, args){
+  const { data, error } = await db.rpc(fn, args||{});
+  if(error){ throw new Error(error.message || "Tilkoblingsfeil"); }
+  return data;
+}
+const isAuthErr = e => (e && e.message || "").indexOf("Ikke innlogget") >= 0;
+
+const nbDateTime = iso => { if(!iso) return ""; try{ return new Date(iso).toLocaleString("nb-NO",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } };
+
+/* ---------- two-step confirm button ---------- */
+function Confirm({label, ask, onConfirm, className}){
+  const [armed,setArmed]=useState(false); const t=useRef(null);
+  useEffect(()=>()=>clearTimeout(t.current),[]);
+  return (
+    <button className={(className||"")+(armed?" armed":"")}
+      onClick={(e)=>{ e.stopPropagation();
+        if(!armed){ setArmed(true); t.current=setTimeout(()=>setArmed(false),3000); }
+        else { clearTimeout(t.current); setArmed(false); onConfirm(); } }}>
+      {armed ? (ask||"Sikker?") : label}
+    </button>
+  );
+}
+
+/* ---------- LOGIN ---------- */
+function Login({onLogin}){
+  const [u,setU]=useState(""); const [p,setP]=useState("");
+  const [err,setErr]=useState(""); const [busy,setBusy]=useState(false);
+  async function submit(){
+    setErr("");
+    if(!u.trim()||!p){ setErr("Fyll inn brukernavn og passord"); return; }
+    setBusy(true);
+    try{
+      const data = await rpc("app_login",{ p_username:u.trim(), p_password:p });
+      if(!data){ setErr("Feil brukernavn eller passord"); }
+      else { saveSession(data); onLogin(data); }
+    }catch(e){ setErr(e.message); }
+    setBusy(false);
+  }
+  const onKey = e => { if(e.key==="Enter") submit(); };
+  return (
+    <div className="login-hero">
+      <div className="login-card">
+        <div className="logo">
+          <div className="mark">K</div>
+          <h1>Kjøkken</h1>
+          <p>Logg inn for å fortsette</p>
+        </div>
+        <div className="panel">
+          {err && <div className="msg err">{err}</div>}
+          <label className="fld"><span className="lab">Brukernavn</span>
+            <input className="in" autoCapitalize="none" autoCorrect="off" value={u}
+              onChange={e=>setU(e.target.value)} onKeyDown={onKey} placeholder="brukernavn" /></label>
+          <label className="fld"><span className="lab">Passord</span>
+            <input className="in" type="password" value={p}
+              onChange={e=>setP(e.target.value)} onKeyDown={onKey} placeholder="••••••••" /></label>
+          <button className="btn btn-primary" disabled={busy} onClick={submit}>
+            {busy ? "Logger inn…" : "Logg inn"}</button>
+        </div>
+        <div className="foot-note">Konto opprettes av eier. Ingen selvregistrering.</div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- PREP BOARD (alle innloggede) ---------- */
+function PrepPage({session, onAuthFail}){
+  const [items,setItems]=useState([]);
+  const [title,setTitle]=useState(""); const [note,setNote]=useState("");
+  const [err,setErr]=useState(""); const [loading,setLoading]=useState(true); const [busy,setBusy]=useState(false);
+
+  const fetchItems = useCallback(async ()=>{
+    try{ const data = await rpc("prep_get",{ p_token:session.token, p_list:"prep" }); setItems(data||[]); setErr(""); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+    setLoading(false);
+  },[session.token, onAuthFail]);
+
+  useEffect(()=>{
+    fetchItems();
+    const id = setInterval(fetchItems, 20000);
+    const onFocus = ()=>fetchItems();
+    window.addEventListener("focus", onFocus);
+    return ()=>{ clearInterval(id); window.removeEventListener("focus", onFocus); };
+  },[fetchItems]);
+
+  async function add(){
+    if(!title.trim()) return; setBusy(true);
+    try{ await rpc("prep_add",{ p_token:session.token, p_title:title.trim(), p_note:note.trim()||null, p_list:"prep" });
+      setTitle(""); setNote(""); await fetchItems(); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+    setBusy(false);
+  }
+  async function toggle(id){
+    try{ await rpc("prep_toggle",{ p_token:session.token, p_id:id }); await fetchItems(); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+  }
+  async function del(id){
+    try{ await rpc("prep_delete",{ p_token:session.token, p_id:id }); await fetchItems(); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+  }
+
+  const done = items.filter(i=>i.done).length;
+  return (
+    <div className="pad">
+      <div className="panel">
+        <div className="eyebrow">Legg til oppgave</div>
+        <label className="fld">
+          <input className="in" value={title} onChange={e=>setTitle(e.target.value)}
+            onKeyDown={e=>{ if(e.key==="Enter") add(); }} placeholder="Hva må preppes? f.eks. Kutte agurk" /></label>
+        <label className="fld">
+          <input className="in" value={note} onChange={e=>setNote(e.target.value)}
+            onKeyDown={e=>{ if(e.key==="Enter") add(); }} placeholder="Notat (valgfritt) – f.eks. 2 kasser" /></label>
+        <button className="btn btn-primary" disabled={busy || !title.trim()} onClick={add}>
+          {busy ? "Legger til…" : "Legg til"}</button>
+      </div>
+
+      {err && <div style={{marginTop:12}} className="msg err">{err}</div>}
+
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",margin:"18px 4px 0"}}>
+        <div className="eyebrow" style={{margin:0}}>Må preppes</div>
+        <div className="row">{done} / {items.length} gjort</div>
+      </div>
+
+      {loading ? <div className="empty">Laster…</div> :
+        items.length === 0 ? <div className="empty">Ingen oppgaver enda.<br/>Legg til det som må preppes.</div> :
+        <div className="plist">
+          {items.map(it=>(
+            <div key={it.id} className={"pitem"+(it.done?" done":"")}>
+              <div className="check" onClick={()=>toggle(it.id)}>
+                <svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6"/></svg></div>
+              <div className="pbody" onClick={()=>toggle(it.id)}>
+                <div className="pt">{it.title}</div>
+                {it.note && <div className="pn">{it.note}</div>}
+                <div className="pmeta">
+                  {it.created_by ? "Lagt til av "+it.created_by : ""}
+                  {it.done && it.done_by ? "  ·  ✓ "+it.done_by+(it.done_at?" "+nbDateTime(it.done_at):"") : ""}
+                </div>
+              </div>
+              <Confirm className="pdel" label="×" ask="✓?" onConfirm={()=>del(it.id)} />
+            </div>
+          ))}
+        </div>}
+    </div>
+  );
+}
+
+/* ---------- OWNER: manage workers ---------- */
+function WorkersPage({session, onAuthFail}){
+  const [workers,setWorkers]=useState([]);
+  const [u,setU]=useState(""); const [p,setP]=useState(""); const [name,setName]=useState("");
+  const [err,setErr]=useState(""); const [ok,setOk]=useState(""); const [busy,setBusy]=useState(false);
+  const [loading,setLoading]=useState(true);
+  const [pw,setPw]=useState({}); // per-worker new password input
+
+  const fetchWorkers = useCallback(async ()=>{
+    try{ const data = await rpc("app_list_workers",{ p_token:session.token }); setWorkers(data||[]); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+    setLoading(false);
+  },[session.token, onAuthFail]);
+  useEffect(()=>{ fetchWorkers(); },[fetchWorkers]);
+
+  async function create(){
+    setErr(""); setOk("");
+    if(!u.trim()||!p){ setErr("Brukernavn og passord må fylles ut"); return; }
+    if(p.length < 4){ setErr("Passord bør være minst 4 tegn"); return; }
+    setBusy(true);
+    try{
+      await rpc("app_create_user",{ p_token:session.token, p_username:u.trim(), p_password:p, p_display_name:name.trim() });
+      setOk("Konto opprettet for «"+(name.trim()||u.trim())+"»"); setU(""); setP(""); setName("");
+      await fetchWorkers();
+    }catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+    setBusy(false);
+  }
+  async function remove(id){
+    try{ await rpc("app_delete_user",{ p_token:session.token, p_user_id:id }); await fetchWorkers(); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+  }
+  async function setPassword(id){
+    const np = (pw[id]||"").trim();
+    if(np.length < 4){ setErr("Nytt passord bør være minst 4 tegn"); return; }
+    setErr(""); setOk("");
+    try{ await rpc("app_set_password",{ p_token:session.token, p_user_id:id, p_new_password:np });
+      setPw(s=>({ ...s, [id]:"" })); setOk("Passord oppdatert"); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+  }
+
+  return (
+    <div className="pad">
+      <div className="panel">
+        <div className="eyebrow">Opprett ny ansatt</div>
+        {err && <div className="msg err">{err}</div>}
+        {ok && <div className="msg ok">{ok}</div>}
+        <label className="fld"><span className="lab">Visningsnavn (valgfritt)</span>
+          <input className="in" value={name} onChange={e=>setName(e.target.value)} placeholder="f.eks. Enes" /></label>
+        <label className="fld"><span className="lab">Brukernavn</span>
+          <input className="in" autoCapitalize="none" autoCorrect="off" value={u}
+            onChange={e=>setU(e.target.value)} placeholder="brukernavn" /></label>
+        <label className="fld"><span className="lab">Passord</span>
+          <input className="in" type="text" value={p} onChange={e=>setP(e.target.value)} placeholder="passord (du velger)" /></label>
+        <button className="btn btn-primary" disabled={busy} onClick={create}>
+          {busy ? "Oppretter…" : "Opprett bruker"}</button>
+      </div>
+
+      <div style={{margin:"18px 4px 0"}} className="eyebrow">Ansatte ({workers.length})</div>
+      {loading ? <div className="empty">Laster…</div> :
+        workers.length === 0 ? <div className="empty">Ingen ansatte enda.</div> :
+        <div style={{marginTop:10}}>
+          {workers.map(w=>(
+            <div key={w.id} className="wrow">
+              <div className="wtop">
+                <div style={{minWidth:0}}>
+                  <div className="wname">{w.display_name}</div>
+                  <div className="wuser">@{w.username}</div>
+                </div>
+                <Confirm className="btn btn-danger" label="Slett" ask="Slette?" onConfirm={()=>remove(w.id)} />
+              </div>
+              <div className="pwline">
+                <input className="in" type="text" placeholder="nytt passord"
+                  value={pw[w.id]||""} onChange={e=>setPw(s=>({ ...s, [w.id]:e.target.value }))} />
+                <button className="btn btn-sm" onClick={()=>setPassword(w.id)}>Sett</button>
+              </div>
+            </div>
+          ))}
+        </div>}
+    </div>
+  );
+}
+
+/* ---------- SHELL ---------- */
+function Shell({session, onLogout}){
+  const isOwner = session.role === "owner";
+  const [tab,setTab]=useState("prep");
+  async function logout(){ try{ await rpc("app_logout",{ p_token:session.token }); }catch(e){} clearSession(); onLogout(); }
+  return (
+    <div className="wrap">
+      <div className="steel">
+        <div className="topbar">
+          <div className="brand">
+            <h1>Kjøkken</h1>
+            <div className="who">{session.display_name}<span className="role">{isOwner?"Eier":"Ansatt"}</span></div>
+          </div>
+          <button className="logout" onClick={logout}>Logg ut</button>
+        </div>
+      </div>
+      {isOwner &&
+        <div className="tabs">
+          <div className={"tab"+(tab==="prep"?" on":"")} onClick={()=>setTab("prep")}>Prep</div>
+          <div className={"tab"+(tab==="workers"?" on":"")} onClick={()=>setTab("workers")}>Ansatte</div>
+        </div>}
+      {tab==="workers" && isOwner
+        ? <WorkersPage session={session} onAuthFail={onLogout} />
+        : <PrepPage session={session} onAuthFail={onLogout} />}
+    </div>
+  );
+}
+
+/* ---------- APP ---------- */
+function App(){
+  const [session,setSession]=useState(loadSession());
+  const logout = ()=>{ clearSession(); setSession(null); };
+
+  if(!CONFIGURED){
+    return (
+      <div className="center-note">
+        <div className="login-card">
+          <div className="msg info">
+            <b>Nesten klar.</b><br/>
+            Åpne denne filen og lim inn din <b>Supabase-URL</b> og <b>anon-nøkkel</b> øverst i koden
+            (linjene merket «FYLL INN»). Kjør også SQL-en i Supabase først.
+          </div>
+        </div>
+      </div>
+    );
+  }
+  return session ? <Shell session={session} onLogout={logout} /> : <Login onLogin={setSession} />;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
