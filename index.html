@@ -8,7 +8,6 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-title" content="Kjøkken" />
 
-<!-- React 18 + Supabase (UMD) + Babel 7 (classic JSX runtime). Loaded as classic scripts on purpose. -->
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2.45.0"></script>
@@ -31,7 +30,6 @@
   body{background:var(--bg);color:var(--ink);font-family:var(--sans);line-height:1.4;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom);}
   .wrap{max-width:580px;margin:0 auto;}
 
-  /* steel header */
   .steel{position:sticky;top:0;z-index:20;padding-top:env(safe-area-inset-top);
     background:repeating-linear-gradient(0deg, rgba(255,255,255,0) 0, rgba(255,255,255,.28) 1px, rgba(0,0,0,.018) 2px, rgba(255,255,255,0) 3px),
       linear-gradient(180deg,#DBE0E2 0%,#CBD0D3 46%,#C2C7CA 56%,#D4D8DA 100%);
@@ -44,17 +42,13 @@
   .logout{flex:none;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5A6166;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.85);padding:8px 12px;border-radius:9px;cursor:pointer;}
   .logout:active{transform:scale(.97);}
 
-  /* tabs */
-  .tabs{max-width:580px;margin:0 auto;display:flex;gap:7px;padding:12px 14px 4px;}
-  .tab{flex:1;text-align:center;font-size:13px;font-weight:700;letter-spacing:.03em;color:#6A7176;background:var(--surface);border:1px solid var(--line);padding:11px 8px;border-radius:11px;cursor:pointer;transition:all .15s ease;}
+  .tabs{max-width:580px;margin:0 auto;display:flex;gap:6px;padding:12px 12px 4px;}
+  .tab{flex:1;text-align:center;font-size:12.5px;font-weight:700;letter-spacing:.02em;color:#6A7176;background:var(--surface);border:1px solid var(--line);padding:11px 4px;border-radius:11px;cursor:pointer;transition:all .15s ease;}
   .tab.on{color:#fff;background:#262B2E;border-color:#262B2E;}
 
-  /* generic card / sections */
   .pad{padding:12px 14px;}
   .panel{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04);}
-  .panel + .panel{margin-top:12px;}
   .eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#8A9197;margin-bottom:10px;}
-  .h2{font-size:16px;font-weight:700;margin:0 0 12px;letter-spacing:-.01em;}
 
   label.fld{display:block;margin-bottom:11px;}
   label.fld .lab{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.02em;margin-bottom:5px;display:block;}
@@ -64,23 +58,22 @@
 
   .btn{appearance:none;border:none;cursor:pointer;font-family:var(--sans);font-weight:700;letter-spacing:.02em;border-radius:11px;transition:transform .1s ease,opacity .15s ease,background .15s ease;}
   .btn:active{transform:scale(.98);}
-  .btn[disabled]{opacity:.55;cursor:default;}
+  .btn[disabled]{opacity:.5;cursor:default;}
   .btn-primary{width:100%;background:var(--done);color:#fff;font-size:15px;padding:14px;}
   .btn-primary:active{background:var(--done-deep);}
-  .btn-sm{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:9px 13px;background:#EEF1F2;color:#3C4348;border:1px solid var(--line);}
-  .btn-danger{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:9px 13px;background:#fff;color:var(--alert-ink);border:1px solid var(--alert-line);}
-  .btn-danger.armed{background:var(--alert-bg);}
+  .btn-sm{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:9px 13px;background:#EEF1F2;color:#3C4348;border:1px solid var(--line);}
   .btn-sm.armed{background:var(--alert-bg);color:var(--alert-ink);border-color:var(--alert-line);}
+  .btn-danger{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:9px 13px;background:#fff;color:var(--alert-ink);border:1px solid var(--alert-line);}
+  .btn-danger.armed{background:var(--alert-bg);}
 
   .msg{font-size:13px;border-radius:10px;padding:10px 12px;margin-bottom:12px;}
   .msg.err{background:var(--alert-bg);border:1px solid var(--alert-line);color:#8A2D08;}
   .msg.ok{background:var(--done-tint);border:1px solid #CDE9D6;color:var(--done-deep);}
   .msg.info{background:#EEF3F5;border:1px solid var(--line);color:#4C5358;}
 
-  /* prep list */
   .row{margin-top:4px;font-family:var(--mono);font-size:12.5px;color:#4C5358;}
   .plist{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
-  .pitem{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:13px 13px;}
+  .pitem{display:flex;align-items:flex-start;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:13px;}
   .pitem .check{flex:none;margin-top:1px;width:26px;height:26px;border-radius:8px;border:2px solid var(--line-strong);background:#fff;display:grid;place-items:center;cursor:pointer;transition:.15s;}
   .pitem .check svg{width:15px;height:15px;stroke:#fff;stroke-width:3.4;fill:none;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:24;stroke-dashoffset:24;transition:stroke-dashoffset .2s ease;}
   .pitem.done .check{background:var(--done);border-color:var(--done);}
@@ -94,7 +87,6 @@
   .pdel.armed{background:var(--alert-bg);border-color:var(--alert-line);color:var(--alert-ink);}
   .empty{text-align:center;color:#9AA1A6;font-size:13.5px;padding:26px 10px;}
 
-  /* worker rows */
   .wrow{display:flex;flex-direction:column;gap:10px;background:#FBFCFC;border:1px solid var(--line);border-radius:12px;padding:12px;}
   .wrow + .wrow{margin-top:9px;}
   .wtop{display:flex;align-items:center;justify-content:space-between;gap:10px;}
@@ -103,8 +95,11 @@
   .wactions{display:flex;gap:8px;flex-wrap:wrap;}
   .pwline{display:flex;gap:8px;}
   .pwline input{flex:1;}
+  .rbadge{font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle;}
+  .r-admin{background:#ECEAF6;color:#5B53C6;border:1px solid #D9D5F0;}
+  .r-worker{background:#EEF1F2;color:#5A6166;border:1px solid var(--line);}
 
-  /* routine lists (faste lister) */
+  /* routine + edit lists */
   .seg{display:flex;gap:6px;background:#DFE3E5;border:1px solid var(--line-strong);border-radius:12px;padding:4px;margin-bottom:12px;}
   .seg button{flex:1;appearance:none;border:none;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.02em;color:#5A6166;background:transparent;padding:9px 8px;border-radius:9px;transition:all .15s ease;}
   .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1);}
@@ -114,18 +109,41 @@
   .alert .txt{display:flex;flex-direction:column;line-height:1.2;min-width:0;}
   .alert .txt b{font-size:12px;font-weight:700;}
   .alert .txt span{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.06em;color:#8A2D08;}
-  .listhead{display:flex;justify-content:space-between;align-items:baseline;margin:2px 4px 0;}
+  .listhead{display:flex;justify-content:space-between;align-items:center;margin:2px 4px 0;}
   .stamp{flex:none;align-self:center;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--done-deep);background:var(--done-tint);border:1px solid #CDE9D6;padding:3px 8px;border-radius:8px;white-space:nowrap;}
-  .resetwrap{text-align:center;padding:14px 4px 4px;}
+  .resetwrap{text-align:center;padding:16px 4px 4px;}
 
-  /* login */
+  .editrow{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:12px;display:flex;flex-direction:column;gap:8px;}
+  .editactions{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+  .moves{display:flex;gap:6px;}
+  .iconbtn{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:#fff;color:#5A6166;font-size:16px;cursor:pointer;display:grid;place-items:center;}
+  .iconbtn[disabled]{opacity:.4;cursor:default;}
+
+  /* overview / log */
+  .statrow{display:flex;gap:10px;margin-bottom:8px;}
+  .stat{flex:1;background:#FBFCFC;border:1px solid var(--line);border-radius:11px;padding:10px;text-align:center;}
+  .stat .num{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1;}
+  .stat .lab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px;}
+  .hint2{font-size:11.5px;color:#9AA1A6;}
+  .daygroup{margin-top:16px;}
+  .dayhead{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:capitalize;color:#4C5358;padding:0 4px 8px;}
+  .logitem{display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:7px;}
+  .lbadge{flex:none;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 8px;border-radius:7px;margin-top:1px;white-space:nowrap;}
+  .b-done{background:var(--done-tint);color:var(--done-deep);border:1px solid #CDE9D6;}
+  .b-miss{background:var(--alert-bg);color:var(--alert-ink);border:1px solid var(--alert-line);}
+  .b-undo{background:#EEF1F2;color:#6A7176;border:1px solid var(--line);}
+  .b-reset{background:#E7ECEF;color:#3C4348;border:1px solid var(--line-strong);}
+  .lbody{flex:1;min-width:0;}
+  .ltitle{font-size:14.5px;font-weight:600;}
+  .llist{font-family:var(--mono);font-size:10.5px;color:#9AA1A6;margin-left:4px;}
+  .lmeta{font-size:11.5px;color:#9AA1A6;margin-top:2px;}
+
   .login-hero{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;padding:24px 18px;}
   .login-card{max-width:380px;width:100%;margin:0 auto;}
   .login-card .logo{display:flex;flex-direction:column;align-items:center;margin-bottom:22px;}
   .login-card .logo .mark{width:54px;height:54px;border-radius:15px;background:#262B2E;color:#fff;display:grid;place-items:center;font-family:var(--mono);font-weight:700;font-size:22px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,.15);}
   .login-card .logo h1{margin:0;font-size:20px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;}
   .login-card .logo p{margin:3px 0 0;font-size:12.5px;color:var(--muted);}
-
   .center-note{min-height:100dvh;display:grid;place-items:center;padding:24px;}
   .foot-note{text-align:center;font-size:11px;color:#9AA1A6;padding:18px;}
   @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
@@ -138,15 +156,14 @@
 /* @jsxRuntime classic */
 const { useState, useEffect, useRef, useCallback } = React;
 
-/* ============ FYLL INN DINE TO VERDIER HER ============ */
+/* ============ DINE SUPABASE-VERDIER ============ */
 const SUPABASE_URL = "https://ejqwepovzhdvxqfqgove.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVqcXdlcG92emhkdnhxZnFnb3ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyMTk1NjAsImV4cCI6MjA5Nzc5NTU2MH0.WehFieE3wwqFQwumkqnAk5-HpI8I5G6Tpq3MuZSck6g";
-/* ====================================================== */
+/* =============================================== */
 
 const CONFIGURED = !SUPABASE_URL.includes("YOUR-PROJECT") && !SUPABASE_ANON_KEY.includes("YOUR-ANON");
 const db = CONFIGURED ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-/* storage with in-memory fallback (preview sandbox blocks localStorage; Vercel is fine) */
 function makeStore(){
   try{ const t="__t__"; localStorage.setItem(t,t); localStorage.removeItem(t); return localStorage; }
   catch(e){ const m={}; return { getItem:k=>Object.prototype.hasOwnProperty.call(m,k)?m[k]:null, setItem:(k,v)=>{m[k]=String(v);}, removeItem:k=>{delete m[k];} }; }
@@ -164,67 +181,19 @@ async function rpc(fn, args){
 }
 const isAuthErr = e => (e && e.message || "").indexOf("Ikke innlogget") >= 0;
 
+const ROLE_LABEL = { owner:"Eier", admin:"Administrator", worker:"Ansatt" };
+const LIST_META = {
+  preppeliste:{ title:"Preppeliste", alert:"Mangler noe? Send SMS", stamp:false },
+  vaskeliste:{ title:"Vaskeliste – kveld", alert:"Ved avvik – send SMS til Ivar-Alexander", stamp:true }
+};
+const LIST_LABEL = { preppeliste:"Preppeliste", vaskeliste:"Vaskeliste", prep:"Prep" };
+
 const nbDateTime = iso => { if(!iso) return ""; try{ return new Date(iso).toLocaleString("nb-NO",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } };
+const nbTime = iso => { if(!iso) return ""; try{ return new Date(iso).toLocaleTimeString("nb-NO",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } };
+const nbDay = iso => { try{ return new Date(iso).toLocaleDateString("nb-NO",{weekday:"long",day:"numeric",month:"long"}); }catch(e){ return ""; } };
 const fmtStamp = iso => { if(!iso) return ""; try{ const d=new Date(iso); const p=n=>n<10?"0"+n:""+n; return p(d.getDate())+"."+p(d.getMonth()+1); }catch(e){ return ""; } };
 
-/* ---------- Faste rutinelister ---------- */
-const PREP_ITEMS = [
-  {t:"Lage pizzasaus – rød", n:"Se oppskrift i permer"},
-  {t:"Har vi hamburgerdressing?"},
-  {t:"Har vi syltet rødløk?"},
-  {t:"Har vi remulade?"},
-  {t:"Tine surdeigsbrød"},
-  {t:"Skjære parmaskinke", n:"Bruk påleggsmaskin – NB! ikke for tykke skiver"},
-  {t:"Tangsmør", n:"Legges i sprøytepose med tyll og sprøytes ut pent"},
-  {t:"Sjekk: har vi suppe?", n:"Sjekk kjølehenger, i spann osv."},
-  {t:"Har vi rødspette i fryser på kjøkken?"},
-  {t:"Har vi nuggets?"},
-  {t:"Legg 2 stk rekespann i gramkjøleskap"},
-  {t:"Rogn i sprøytepose"},
-  {t:"Gjør klart dill"},
-  {t:"Kutte sitron", n:"Båter"},
-  {t:"Dele egg i 2", n:"Legg i bakk"},
-  {t:"Finkutte rødløk"},
-  {t:"Finkutte gressløk"},
-  {t:"Vaske salat", n:"Bruk den oransje trommelen"},
-  {t:"Legg pommes frites i fryser på kjøkkenet"},
-  {t:"Fyll på skinke"},
-  {t:"Fylle på / tine marinert biff"},
-  {t:"Fylle på paprika"},
-  {t:"Kutte gul løk"},
-  {t:"Sjekk: har vi tinet n'duja?", n:"Hvis ikke, legg på tining"},
-  {t:"Fylle på / tine chorizo / pepperoni"},
-  {t:"Fylle på / tine kjøttboller til pizza"},
-  {t:"Tine pesto / fylle på flaske"},
-  {t:"Rive parmesan"},
-  {t:"Fylle på ruccola?"}
-];
-const VASK_ITEMS = [
-  {t:"Vask alle benker og overflater"},
-  {t:"Rense / vaske frityr", n:"Med maskin"},
-  {t:"Vask gasskomfyr"},
-  {t:"Vaske grill / stekeplate", n:"Husk beholder"},
-  {t:"Vaske kjølerenner"},
-  {t:"Vask skapdører / skuffer", n:"Ved behov"},
-  {t:"Sjekk filter til avtrekk", n:"Om det trenger vask (over grill m.m.)"},
-  {t:"Vask påleggsmaskin", n:"Ved bruk"},
-  {t:"Sett på klutvask", n:"Vask og tørk"},
-  {t:"Tømme søppel", n:"Søppelposer skal i den hvite hengeren"},
-  {t:"Sett i nye poser"},
-  {t:"Moppe / vaske gulv", n:"Ved behov skrubbe"},
-  {t:"Tørk opp bøss fra sluk", n:"Etter naling"},
-  {t:"Litt klorin i sluk og vask"},
-  {t:"Sørg for at oppvask tilhørende kjøkken er gjort"},
-  {t:"Ovner, frityr og kjølerenner er avskrudd"}
-];
-const ROUTINES = {
-  preppeliste:{ title:"Preppeliste", items:PREP_ITEMS, stamp:false,
-    alert:"Mangler noe? Send SMS" },
-  vaskeliste:{ title:"Vaskeliste – kveld", items:VASK_ITEMS, stamp:true,
-    alert:"Ved avvik – send SMS til Ivar-Alexander" }
-};
-
-/* ---------- two-step confirm button ---------- */
+/* ---------- two-step confirm ---------- */
 function Confirm({label, ask, onConfirm, className}){
   const [armed,setArmed]=useState(false); const t=useRef(null);
   useEffect(()=>()=>clearTimeout(t.current),[]);
@@ -257,11 +226,7 @@ function Login({onLogin}){
   return (
     <div className="login-hero">
       <div className="login-card">
-        <div className="logo">
-          <div className="mark">K</div>
-          <h1>Kjøkken</h1>
-          <p>Logg inn for å fortsette</p>
-        </div>
+        <div className="logo"><div className="mark">K</div><h1>Kjøkken</h1><p>Logg inn for å fortsette</p></div>
         <div className="panel">
           {err && <div className="msg err">{err}</div>}
           <label className="fld"><span className="lab">Brukernavn</span>
@@ -270,8 +235,7 @@ function Login({onLogin}){
           <label className="fld"><span className="lab">Passord</span>
             <input className="in" type="password" value={p}
               onChange={e=>setP(e.target.value)} onKeyDown={onKey} placeholder="••••••••" /></label>
-          <button className="btn btn-primary" disabled={busy} onClick={submit}>
-            {busy ? "Logger inn…" : "Logg inn"}</button>
+          <button className="btn btn-primary" disabled={busy} onClick={submit}>{busy ? "Logger inn…" : "Logg inn"}</button>
         </div>
         <div className="foot-note">Konto opprettes av eier. Ingen selvregistrering.</div>
       </div>
@@ -306,44 +270,33 @@ function PrepPage({session, onAuthFail}){
     catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
     setBusy(false);
   }
-  async function toggle(id){
-    try{ await rpc("prep_toggle",{ p_token:session.token, p_id:id }); await fetchItems(); }
-    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
-  }
-  async function del(id){
-    try{ await rpc("prep_delete",{ p_token:session.token, p_id:id }); await fetchItems(); }
-    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
-  }
+  async function toggle(id){ try{ await rpc("prep_toggle",{ p_token:session.token, p_id:id }); await fetchItems(); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); } }
+  async function del(id){ try{ await rpc("prep_delete",{ p_token:session.token, p_id:id }); await fetchItems(); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); } }
 
   const done = items.filter(i=>i.done).length;
   return (
     <div className="pad">
       <div className="panel">
         <div className="eyebrow">Legg til oppgave</div>
-        <label className="fld">
-          <input className="in" value={title} onChange={e=>setTitle(e.target.value)}
-            onKeyDown={e=>{ if(e.key==="Enter") add(); }} placeholder="Hva må preppes? f.eks. Kutte agurk" /></label>
-        <label className="fld">
-          <input className="in" value={note} onChange={e=>setNote(e.target.value)}
-            onKeyDown={e=>{ if(e.key==="Enter") add(); }} placeholder="Notat (valgfritt) – f.eks. 2 kasser" /></label>
-        <button className="btn btn-primary" disabled={busy || !title.trim()} onClick={add}>
-          {busy ? "Legger til…" : "Legg til"}</button>
+        <label className="fld"><input className="in" value={title} onChange={e=>setTitle(e.target.value)}
+          onKeyDown={e=>{ if(e.key==="Enter") add(); }} placeholder="Hva må preppes? f.eks. Kutte agurk" /></label>
+        <label className="fld"><input className="in" value={note} onChange={e=>setNote(e.target.value)}
+          onKeyDown={e=>{ if(e.key==="Enter") add(); }} placeholder="Notat (valgfritt) – f.eks. 2 kasser" /></label>
+        <button className="btn btn-primary" disabled={busy || !title.trim()} onClick={add}>{busy ? "Legger til…" : "Legg til"}</button>
       </div>
-
       {err && <div style={{marginTop:12}} className="msg err">{err}</div>}
-
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",margin:"18px 4px 0"}}>
         <div className="eyebrow" style={{margin:0}}>Må preppes</div>
         <div className="row">{done} / {items.length} gjort</div>
       </div>
-
       {loading ? <div className="empty">Laster…</div> :
         items.length === 0 ? <div className="empty">Ingen oppgaver enda.<br/>Legg til det som må preppes.</div> :
         <div className="plist">
           {items.map(it=>(
             <div key={it.id} className={"pitem"+(it.done?" done":"")}>
-              <div className="check" onClick={()=>toggle(it.id)}>
-                <svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6"/></svg></div>
+              <div className="check" onClick={()=>toggle(it.id)}><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6"/></svg></div>
               <div className="pbody" onClick={()=>toggle(it.id)}>
                 <div className="pt">{it.title}</div>
                 {it.note && <div className="pn">{it.note}</div>}
@@ -360,13 +313,192 @@ function PrepPage({session, onAuthFail}){
   );
 }
 
-/* ---------- OWNER: manage workers ---------- */
+/* ---------- EDIT ROW (eier/admin) ---------- */
+function EditRow({item, first, last, onSave, onDelete, onMove}){
+  const [title,setTitle]=useState(item.title);
+  const [note,setNote]=useState(item.note||"");
+  useEffect(()=>{ setTitle(item.title); setNote(item.note||""); },[item.id, item.title, item.note]);
+  const dirty = title.trim()!==item.title || note.trim()!==(item.note||"");
+  return (
+    <div className="editrow">
+      <input className="in" value={title} onChange={e=>setTitle(e.target.value)} placeholder="Tittel" />
+      <input className="in" value={note} onChange={e=>setNote(e.target.value)} placeholder="Notat (valgfritt)" />
+      <div className="editactions">
+        <div className="moves">
+          <button className="iconbtn" disabled={first} onClick={()=>onMove(item.id,-1)}>↑</button>
+          <button className="iconbtn" disabled={last} onClick={()=>onMove(item.id,1)}>↓</button>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button className="btn btn-sm" disabled={!dirty || !title.trim()} onClick={()=>onSave(item.id,title.trim(),note.trim())}>Lagre</button>
+          <Confirm className="btn btn-danger" label="Slett" ask="Slette?" onConfirm={()=>onDelete(item.id)} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- FASTE LISTER (DB, delt, redigerbar) ---------- */
+function ListsPage({session, onAuthFail}){
+  const isEditor = session.role==="owner" || session.role==="admin";
+  const [sub,setSub]=useState("preppeliste");
+  const [items,setItems]=useState([]);
+  const [loading,setLoading]=useState(true);
+  const [err,setErr]=useState("");
+  const [edit,setEdit]=useState(false);
+  const [nt,setNt]=useState(""); const [nn,setNn]=useState("");
+  const meta = LIST_META[sub];
+
+  const fetchItems = useCallback(async (list)=>{
+    try{ const data = await rpc("list_get",{ p_token:session.token, p_list:list }); setItems(data||[]); setErr(""); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+    setLoading(false);
+  },[session.token, onAuthFail]);
+
+  useEffect(()=>{
+    setLoading(true); fetchItems(sub);
+    const id=setInterval(()=>{ if(!edit) fetchItems(sub); }, 20000);
+    const onF=()=>{ if(!edit) fetchItems(sub); };
+    window.addEventListener("focus", onF);
+    return ()=>{ clearInterval(id); window.removeEventListener("focus", onF); };
+  },[sub, edit, fetchItems]);
+
+  async function run(fn,args){
+    try{ await rpc(fn,args); await fetchItems(sub); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+  }
+  async function toggle(id){
+    setItems(list=>list.map(x=>x.id===id?{ ...x, done:!x.done,
+      done_by:!x.done?session.display_name:null, done_at:!x.done?new Date().toISOString():null }:x));
+    try{ await rpc("list_toggle",{ p_token:session.token, p_id:id }); fetchItems(sub); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); fetchItems(sub); }
+  }
+  const reset = () => run("list_reset",{ p_token:session.token, p_list:sub });
+  async function addItem(){ if(!nt.trim()) return;
+    await run("item_add",{ p_token:session.token, p_list:sub, p_title:nt.trim(), p_note:nn.trim()||null });
+    setNt(""); setNn(""); }
+  const saveItem = (id,title,note) => run("item_update",{ p_token:session.token, p_id:id, p_title:title, p_note:note||null });
+  const delItem = id => run("item_delete",{ p_token:session.token, p_id:id });
+  const move = (id,dir) => run("item_move",{ p_token:session.token, p_id:id, p_dir:dir });
+
+  const done = items.filter(i=>i.done).length;
+  return (
+    <div className="pad">
+      <div className="seg">
+        {Object.keys(LIST_META).map(k=>(
+          <button key={k} className={sub===k?"on":""} onClick={()=>{ setEdit(false); setSub(k); }}>{LIST_LABEL[k]}</button>
+        ))}
+      </div>
+
+      {!edit &&
+        <a className="alert" href="sms:48494875">
+          <span className="ico">✉︎</span>
+          <span className="txt"><b>{meta.alert}</b><span>48 49 48 75</span></span>
+        </a>}
+
+      {err && <div className="msg err">{err}</div>}
+
+      <div className="listhead">
+        <div className="eyebrow" style={{margin:0}}>{meta.title}</div>
+        {isEditor
+          ? <button className="btn btn-sm" onClick={()=>setEdit(e=>!e)}>{edit ? "Ferdig" : "Rediger"}</button>
+          : <div className="row">{done} / {items.length} ferdig</div>}
+      </div>
+
+      {edit && isEditor &&
+        <div className="panel" style={{marginTop:10}}>
+          <div className="eyebrow">Nytt punkt</div>
+          <label className="fld"><input className="in" value={nt} onChange={e=>setNt(e.target.value)}
+            placeholder="Tittel" onKeyDown={e=>{ if(e.key==="Enter") addItem(); }} /></label>
+          <label className="fld"><input className="in" value={nn} onChange={e=>setNn(e.target.value)}
+            placeholder="Notat (valgfritt)" onKeyDown={e=>{ if(e.key==="Enter") addItem(); }} /></label>
+          <button className="btn btn-primary" disabled={!nt.trim()} onClick={addItem}>Legg til punkt</button>
+        </div>}
+
+      {loading ? <div className="empty">Laster…</div> :
+        items.length===0 ? <div className="empty">Ingen punkter i lista.</div> :
+        <div className="plist">
+          {items.map((it,idx)=> edit && isEditor
+            ? <EditRow key={it.id} item={it} first={idx===0} last={idx===items.length-1}
+                onSave={saveItem} onDelete={delItem} onMove={move} />
+            : <div key={it.id} className={"pitem"+(it.done?" done":"")}>
+                <div className="check" onClick={()=>toggle(it.id)}><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6"/></svg></div>
+                <div className="pbody" onClick={()=>toggle(it.id)}>
+                  <div className="pt">{it.title}</div>
+                  {it.note && <div className="pn">{it.note}</div>}
+                  {it.done && it.done_by && <div className="pmeta">✓ {it.done_by}{it.done_at? " · "+nbDateTime(it.done_at):""}</div>}
+                </div>
+                {meta.stamp && it.done && <span className="stamp">{fmtStamp(it.done_at)}</span>}
+              </div>
+          )}
+        </div>}
+
+      {isEditor && !edit && items.length>0 &&
+        <div className="resetwrap">
+          <Confirm className="btn btn-danger" label={"Nullstill "+LIST_LABEL[sub].toLowerCase()}
+            ask="Trykk igjen – nullstill" onConfirm={reset} />
+        </div>}
+    </div>
+  );
+}
+
+/* ---------- OVERSIKT / LOGG (siste 30 dager) ---------- */
+function ActivityPage({session, onAuthFail}){
+  const [log,setLog]=useState([]); const [loading,setLoading]=useState(true); const [err,setErr]=useState("");
+  const fetchLog = useCallback(async ()=>{
+    try{ const data = await rpc("activity_get",{ p_token:session.token }); setLog(data||[]); setErr(""); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+    setLoading(false);
+  },[session.token, onAuthFail]);
+  useEffect(()=>{ fetchLog(); const id=setInterval(fetchLog,30000); const onF=()=>fetchLog();
+    window.addEventListener("focus",onF); return ()=>{ clearInterval(id); window.removeEventListener("focus",onF); }; },[fetchLog]);
+
+  const groups=[]; const map={};
+  log.forEach(e=>{ const key=nbDay(e.at); if(!map[key]){ map[key]=[]; groups.push(key); } map[key].push(e); });
+  const doneCount = log.filter(e=>e.action==="gjort").length;
+  const missCount = log.filter(e=>e.action==="ikke gjort").length;
+  const badge = a => a==="gjort" ? {cls:"b-done",txt:"Gjort"}
+    : a==="ikke gjort" ? {cls:"b-miss",txt:"Ikke gjort"}
+    : a==="angret" ? {cls:"b-undo",txt:"Angret"}
+    : {cls:"b-reset",txt:"Nullstilt"};
+
+  return (
+    <div className="pad">
+      <div className="panel">
+        <div className="eyebrow">Oversikt – siste 30 dager</div>
+        <div className="statrow">
+          <div className="stat"><div className="num" style={{color:"var(--done)"}}>{doneCount}</div><div className="lab">gjort</div></div>
+          <div className="stat"><div className="num" style={{color:"var(--alert-ink)"}}>{missCount}</div><div className="lab">ikke gjort</div></div>
+        </div>
+        <div className="hint2">Aktivitet eldre enn 30 dager slettes automatisk.</div>
+      </div>
+      {err && <div style={{marginTop:12}} className="msg err">{err}</div>}
+      {loading ? <div className="empty">Laster…</div> :
+        log.length===0 ? <div className="empty">Ingen aktivitet enda.</div> :
+        groups.map(g=>(
+          <div key={g} className="daygroup">
+            <div className="dayhead">{g}</div>
+            {map[g].map((e,i)=>{ const b=badge(e.action); return (
+              <div key={i} className="logitem">
+                <span className={"lbadge "+b.cls}>{b.txt}</span>
+                <div className="lbody">
+                  <div className="ltitle">{e.item_title}<span className="llist">{LIST_LABEL[e.list]||e.list}</span></div>
+                  <div className="lmeta">{nbTime(e.at)}{e.actor? " · "+e.actor:""}</div>
+                </div>
+              </div>
+            );})}
+          </div>
+        ))}
+    </div>
+  );
+}
+
+/* ---------- EIER: brukere + roller ---------- */
 function WorkersPage({session, onAuthFail}){
   const [workers,setWorkers]=useState([]);
   const [u,setU]=useState(""); const [p,setP]=useState(""); const [name,setName]=useState("");
   const [err,setErr]=useState(""); const [ok,setOk]=useState(""); const [busy,setBusy]=useState(false);
   const [loading,setLoading]=useState(true);
-  const [pw,setPw]=useState({}); // per-worker new password input
+  const [pw,setPw]=useState({});
 
   const fetchWorkers = useCallback(async ()=>{
     try{ const data = await rpc("app_list_workers",{ p_token:session.token }); setWorkers(data||[]); }
@@ -380,17 +512,17 @@ function WorkersPage({session, onAuthFail}){
     if(!u.trim()||!p){ setErr("Brukernavn og passord må fylles ut"); return; }
     if(p.length < 4){ setErr("Passord bør være minst 4 tegn"); return; }
     setBusy(true);
-    try{
-      await rpc("app_create_user",{ p_token:session.token, p_username:u.trim(), p_password:p, p_display_name:name.trim() });
-      setOk("Konto opprettet for «"+(name.trim()||u.trim())+"»"); setU(""); setP(""); setName("");
-      await fetchWorkers();
-    }catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+    try{ await rpc("app_create_user",{ p_token:session.token, p_username:u.trim(), p_password:p, p_display_name:name.trim() });
+      setOk("Konto opprettet for «"+(name.trim()||u.trim())+"»"); setU(""); setP(""); setName(""); await fetchWorkers(); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
     setBusy(false);
   }
-  async function remove(id){
-    try{ await rpc("app_delete_user",{ p_token:session.token, p_user_id:id }); await fetchWorkers(); }
-    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
-  }
+  async function remove(id){ try{ await rpc("app_delete_user",{ p_token:session.token, p_user_id:id }); await fetchWorkers(); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); } }
+  async function setRole(id, role){ setErr(""); setOk("");
+    try{ await rpc("app_set_role",{ p_token:session.token, p_user_id:id, p_role:role }); await fetchWorkers();
+      setOk(role==="admin"?"Bruker er nå administrator":"Bruker er nå ansatt"); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); } }
   async function setPassword(id){
     const np = (pw[id]||"").trim();
     if(np.length < 4){ setErr("Nytt passord bør være minst 4 tegn"); return; }
@@ -403,7 +535,7 @@ function WorkersPage({session, onAuthFail}){
   return (
     <div className="pad">
       <div className="panel">
-        <div className="eyebrow">Opprett ny ansatt</div>
+        <div className="eyebrow">Opprett ny bruker</div>
         {err && <div className="msg err">{err}</div>}
         {ok && <div className="msg ok">{ok}</div>}
         <label className="fld"><span className="lab">Visningsnavn (valgfritt)</span>
@@ -413,22 +545,29 @@ function WorkersPage({session, onAuthFail}){
             onChange={e=>setU(e.target.value)} placeholder="brukernavn" /></label>
         <label className="fld"><span className="lab">Passord</span>
           <input className="in" type="text" value={p} onChange={e=>setP(e.target.value)} placeholder="passord (du velger)" /></label>
-        <button className="btn btn-primary" disabled={busy} onClick={create}>
-          {busy ? "Oppretter…" : "Opprett bruker"}</button>
+        <button className="btn btn-primary" disabled={busy} onClick={create}>{busy ? "Oppretter…" : "Opprett bruker"}</button>
+        <div className="hint2" style={{marginTop:10}}>Nye brukere blir ansatte. Gjør dem til administrator for å gi dem tilgang til å redigere listene.</div>
       </div>
 
-      <div style={{margin:"18px 4px 0"}} className="eyebrow">Ansatte ({workers.length})</div>
+      <div style={{margin:"18px 4px 0"}} className="eyebrow">Brukere ({workers.length})</div>
       {loading ? <div className="empty">Laster…</div> :
-        workers.length === 0 ? <div className="empty">Ingen ansatte enda.</div> :
+        workers.length === 0 ? <div className="empty">Ingen brukere enda.</div> :
         <div style={{marginTop:10}}>
           {workers.map(w=>(
             <div key={w.id} className="wrow">
               <div className="wtop">
                 <div style={{minWidth:0}}>
-                  <div className="wname">{w.display_name}</div>
+                  <div className="wname">{w.display_name}
+                    <span className={"rbadge "+(w.role==="admin"?"r-admin":"r-worker")}>{w.role==="admin"?"Admin":"Ansatt"}</span>
+                  </div>
                   <div className="wuser">@{w.username}</div>
                 </div>
                 <Confirm className="btn btn-danger" label="Slett" ask="Slette?" onConfirm={()=>remove(w.id)} />
+              </div>
+              <div className="wactions">
+                {w.role==="admin"
+                  ? <button className="btn btn-sm" onClick={()=>setRole(w.id,"worker")}>Fjern admin</button>
+                  : <button className="btn btn-sm" onClick={()=>setRole(w.id,"admin")}>Gjør til admin</button>}
               </div>
               <div className="pwline">
                 <input className="in" type="text" placeholder="nytt passord"
@@ -438,92 +577,6 @@ function WorkersPage({session, onAuthFail}){
             </div>
           ))}
         </div>}
-    </div>
-  );
-}
-
-/* ---------- FASTE LISTER (delt avhuking via Supabase) ---------- */
-function RoutinePage({session, onAuthFail}){
-  const [sub,setSub]=useState("preppeliste");
-  const [state,setState]=useState({});      // item_key -> { done_at, done_by }
-  const [loading,setLoading]=useState(true);
-  const [err,setErr]=useState("");
-  const cfg = ROUTINES[sub];
-  const shortName = k => ROUTINES[k].title.split(" – ")[0];
-
-  const fetchState = useCallback(async (list)=>{
-    try{
-      const data = await rpc("routine_get",{ p_token:session.token, p_list:list });
-      const m={}; (data||[]).forEach(r=>{ m[r.item_key]={ done_at:r.done_at, done_by:r.done_by }; });
-      setState(m); setErr("");
-    }catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
-    setLoading(false);
-  },[session.token, onAuthFail]);
-
-  useEffect(()=>{
-    setLoading(true); fetchState(sub);
-    const id=setInterval(()=>fetchState(sub), 20000);
-    const onF=()=>fetchState(sub);
-    window.addEventListener("focus", onF);
-    return ()=>{ clearInterval(id); window.removeEventListener("focus", onF); };
-  },[sub, fetchState]);
-
-  async function toggle(key){
-    setState(s=>{ const n={...s}; if(n[key]) delete n[key];
-      else n[key]={ done_at:new Date().toISOString(), done_by:session.display_name }; return n; });
-    try{ await rpc("routine_toggle",{ p_token:session.token, p_list:sub, p_item_key:key }); fetchState(sub); }
-    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); fetchState(sub); }
-  }
-  async function reset(){
-    setState({});
-    try{ await rpc("routine_reset",{ p_token:session.token, p_list:sub }); fetchState(sub); }
-    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); fetchState(sub); }
-  }
-
-  const done = Object.keys(state).length;
-  return (
-    <div className="pad">
-      <div className="seg">
-        {Object.keys(ROUTINES).map(k=>(
-          <button key={k} className={sub===k?"on":""} onClick={()=>setSub(k)}>{shortName(k)}</button>
-        ))}
-      </div>
-
-      <a className="alert" href="sms:48494875">
-        <span className="ico">✉︎</span>
-        <span className="txt"><b>{cfg.alert}</b><span>48 49 48 75</span></span>
-      </a>
-
-      {err && <div className="msg err">{err}</div>}
-
-      <div className="listhead">
-        <div className="eyebrow" style={{margin:0}}>{cfg.title}</div>
-        <div className="row">{done} / {cfg.items.length} ferdig</div>
-      </div>
-
-      {loading ? <div className="empty">Laster…</div> :
-        <div className="plist">
-          {cfg.items.map((it,i)=>{
-            const on = !!state[i];
-            return (
-              <div key={i} className={"pitem"+(on?" done":"")}>
-                <div className="check" onClick={()=>toggle(i)}>
-                  <svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6"/></svg></div>
-                <div className="pbody" onClick={()=>toggle(i)}>
-                  <div className="pt">{it.t}</div>
-                  {it.n && <div className="pn">{it.n}</div>}
-                  {on && state[i].done_by && <div className="pmeta">✓ {state[i].done_by}</div>}
-                </div>
-                {cfg.stamp && on && <span className="stamp">{fmtStamp(state[i].done_at)}</span>}
-              </div>
-            );
-          })}
-        </div>}
-
-      <div className="resetwrap">
-        <Confirm className="btn btn-danger" label={"Nullstill "+shortName(sub).toLowerCase()}
-          ask="Trykk igjen – nullstill" onConfirm={reset} />
-      </div>
     </div>
   );
 }
@@ -539,18 +592,20 @@ function Shell({session, onLogout}){
         <div className="topbar">
           <div className="brand">
             <h1>Kjøkken</h1>
-            <div className="who">{session.display_name}<span className="role">{isOwner?"Eier":"Ansatt"}</span></div>
+            <div className="who">{session.display_name}<span className="role">{ROLE_LABEL[session.role]||session.role}</span></div>
           </div>
           <button className="logout" onClick={logout}>Logg ut</button>
         </div>
       </div>
       <div className="tabs">
-        <div className={"tab"+(tab==="prep"?" on":"")} onClick={()=>setTab("prep")}>Prep</div>
-        <div className={"tab"+(tab==="lister"?" on":"")} onClick={()=>setTab("lister")}>Lister</div>
-        {isOwner && <div className={"tab"+(tab==="workers"?" on":"")} onClick={()=>setTab("workers")}>Ansatte</div>}
+        <div className={tab==="prep"?"tab on":"tab"} onClick={()=>setTab("prep")}>Prep</div>
+        <div className={tab==="lister"?"tab on":"tab"} onClick={()=>setTab("lister")}>Lister</div>
+        <div className={tab==="logg"?"tab on":"tab"} onClick={()=>setTab("logg")}>Logg</div>
+        {isOwner && <div className={tab==="workers"?"tab on":"tab"} onClick={()=>setTab("workers")}>Ansatte</div>}
       </div>
       {tab==="workers" && isOwner ? <WorkersPage session={session} onAuthFail={onLogout} />
-        : tab==="lister" ? <RoutinePage session={session} onAuthFail={onLogout} />
+        : tab==="lister" ? <ListsPage session={session} onAuthFail={onLogout} />
+        : tab==="logg" ? <ActivityPage session={session} onAuthFail={onLogout} />
         : <PrepPage session={session} onAuthFail={onLogout} />}
     </div>
   );
@@ -560,18 +615,11 @@ function Shell({session, onLogout}){
 function App(){
   const [session,setSession]=useState(loadSession());
   const logout = ()=>{ clearSession(); setSession(null); };
-
   if(!CONFIGURED){
     return (
-      <div className="center-note">
-        <div className="login-card">
-          <div className="msg info">
-            <b>Nesten klar.</b><br/>
-            Åpne denne filen og lim inn din <b>Supabase-URL</b> og <b>anon-nøkkel</b> øverst i koden
-            (linjene merket «FYLL INN»). Kjør også SQL-en i Supabase først.
-          </div>
-        </div>
-      </div>
+      <div className="center-note"><div className="login-card">
+        <div className="msg info"><b>Nesten klar.</b><br/>Lim inn Supabase-URL og anon-nøkkel øverst i koden, og kjør SQL-en i Supabase.</div>
+      </div></div>
     );
   }
   return session ? <Shell session={session} onLogout={logout} /> : <Login onLogin={setSession} />;
