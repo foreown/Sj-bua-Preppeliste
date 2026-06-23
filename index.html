@@ -104,6 +104,20 @@
   .pwline{display:flex;gap:8px;}
   .pwline input{flex:1;}
 
+  /* routine lists (faste lister) */
+  .seg{display:flex;gap:6px;background:#DFE3E5;border:1px solid var(--line-strong);border-radius:12px;padding:4px;margin-bottom:12px;}
+  .seg button{flex:1;appearance:none;border:none;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.02em;color:#5A6166;background:transparent;padding:9px 8px;border-radius:9px;transition:all .15s ease;}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1);}
+  .alert{display:flex;align-items:center;gap:11px;background:var(--alert-bg);border:1px solid var(--alert-line);border-radius:12px;padding:10px 13px;color:var(--alert-ink);text-decoration:none;margin-bottom:12px;}
+  .alert:active{transform:scale(.99);}
+  .alert .ico{flex:none;width:28px;height:28px;border-radius:8px;background:#fff;border:1px solid var(--alert-line);display:grid;place-items:center;font-size:14px;}
+  .alert .txt{display:flex;flex-direction:column;line-height:1.2;min-width:0;}
+  .alert .txt b{font-size:12px;font-weight:700;}
+  .alert .txt span{font-family:var(--mono);font-size:14px;font-weight:600;letter-spacing:.06em;color:#8A2D08;}
+  .listhead{display:flex;justify-content:space-between;align-items:baseline;margin:2px 4px 0;}
+  .stamp{flex:none;align-self:center;font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.03em;color:var(--done-deep);background:var(--done-tint);border:1px solid #CDE9D6;padding:3px 8px;border-radius:8px;white-space:nowrap;}
+  .resetwrap{text-align:center;padding:14px 4px 4px;}
+
   /* login */
   .login-hero{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;padding:24px 18px;}
   .login-card{max-width:380px;width:100%;margin:0 auto;}
@@ -151,6 +165,64 @@ async function rpc(fn, args){
 const isAuthErr = e => (e && e.message || "").indexOf("Ikke innlogget") >= 0;
 
 const nbDateTime = iso => { if(!iso) return ""; try{ return new Date(iso).toLocaleString("nb-NO",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } };
+const fmtStamp = iso => { if(!iso) return ""; try{ const d=new Date(iso); const p=n=>n<10?"0"+n:""+n; return p(d.getDate())+"."+p(d.getMonth()+1); }catch(e){ return ""; } };
+
+/* ---------- Faste rutinelister ---------- */
+const PREP_ITEMS = [
+  {t:"Lage pizzasaus – rød", n:"Se oppskrift i permer"},
+  {t:"Har vi hamburgerdressing?"},
+  {t:"Har vi syltet rødløk?"},
+  {t:"Har vi remulade?"},
+  {t:"Tine surdeigsbrød"},
+  {t:"Skjære parmaskinke", n:"Bruk påleggsmaskin – NB! ikke for tykke skiver"},
+  {t:"Tangsmør", n:"Legges i sprøytepose med tyll og sprøytes ut pent"},
+  {t:"Sjekk: har vi suppe?", n:"Sjekk kjølehenger, i spann osv."},
+  {t:"Har vi rødspette i fryser på kjøkken?"},
+  {t:"Har vi nuggets?"},
+  {t:"Legg 2 stk rekespann i gramkjøleskap"},
+  {t:"Rogn i sprøytepose"},
+  {t:"Gjør klart dill"},
+  {t:"Kutte sitron", n:"Båter"},
+  {t:"Dele egg i 2", n:"Legg i bakk"},
+  {t:"Finkutte rødløk"},
+  {t:"Finkutte gressløk"},
+  {t:"Vaske salat", n:"Bruk den oransje trommelen"},
+  {t:"Legg pommes frites i fryser på kjøkkenet"},
+  {t:"Fyll på skinke"},
+  {t:"Fylle på / tine marinert biff"},
+  {t:"Fylle på paprika"},
+  {t:"Kutte gul løk"},
+  {t:"Sjekk: har vi tinet n'duja?", n:"Hvis ikke, legg på tining"},
+  {t:"Fylle på / tine chorizo / pepperoni"},
+  {t:"Fylle på / tine kjøttboller til pizza"},
+  {t:"Tine pesto / fylle på flaske"},
+  {t:"Rive parmesan"},
+  {t:"Fylle på ruccola?"}
+];
+const VASK_ITEMS = [
+  {t:"Vask alle benker og overflater"},
+  {t:"Rense / vaske frityr", n:"Med maskin"},
+  {t:"Vask gasskomfyr"},
+  {t:"Vaske grill / stekeplate", n:"Husk beholder"},
+  {t:"Vaske kjølerenner"},
+  {t:"Vask skapdører / skuffer", n:"Ved behov"},
+  {t:"Sjekk filter til avtrekk", n:"Om det trenger vask (over grill m.m.)"},
+  {t:"Vask påleggsmaskin", n:"Ved bruk"},
+  {t:"Sett på klutvask", n:"Vask og tørk"},
+  {t:"Tømme søppel", n:"Søppelposer skal i den hvite hengeren"},
+  {t:"Sett i nye poser"},
+  {t:"Moppe / vaske gulv", n:"Ved behov skrubbe"},
+  {t:"Tørk opp bøss fra sluk", n:"Etter naling"},
+  {t:"Litt klorin i sluk og vask"},
+  {t:"Sørg for at oppvask tilhørende kjøkken er gjort"},
+  {t:"Ovner, frityr og kjølerenner er avskrudd"}
+];
+const ROUTINES = {
+  preppeliste:{ title:"Preppeliste", items:PREP_ITEMS, stamp:false,
+    alert:"Mangler noe? Send SMS" },
+  vaskeliste:{ title:"Vaskeliste – kveld", items:VASK_ITEMS, stamp:true,
+    alert:"Ved avvik – send SMS til Ivar-Alexander" }
+};
 
 /* ---------- two-step confirm button ---------- */
 function Confirm({label, ask, onConfirm, className}){
@@ -370,6 +442,92 @@ function WorkersPage({session, onAuthFail}){
   );
 }
 
+/* ---------- FASTE LISTER (delt avhuking via Supabase) ---------- */
+function RoutinePage({session, onAuthFail}){
+  const [sub,setSub]=useState("preppeliste");
+  const [state,setState]=useState({});      // item_key -> { done_at, done_by }
+  const [loading,setLoading]=useState(true);
+  const [err,setErr]=useState("");
+  const cfg = ROUTINES[sub];
+  const shortName = k => ROUTINES[k].title.split(" – ")[0];
+
+  const fetchState = useCallback(async (list)=>{
+    try{
+      const data = await rpc("routine_get",{ p_token:session.token, p_list:list });
+      const m={}; (data||[]).forEach(r=>{ m[r.item_key]={ done_at:r.done_at, done_by:r.done_by }; });
+      setState(m); setErr("");
+    }catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+    setLoading(false);
+  },[session.token, onAuthFail]);
+
+  useEffect(()=>{
+    setLoading(true); fetchState(sub);
+    const id=setInterval(()=>fetchState(sub), 20000);
+    const onF=()=>fetchState(sub);
+    window.addEventListener("focus", onF);
+    return ()=>{ clearInterval(id); window.removeEventListener("focus", onF); };
+  },[sub, fetchState]);
+
+  async function toggle(key){
+    setState(s=>{ const n={...s}; if(n[key]) delete n[key];
+      else n[key]={ done_at:new Date().toISOString(), done_by:session.display_name }; return n; });
+    try{ await rpc("routine_toggle",{ p_token:session.token, p_list:sub, p_item_key:key }); fetchState(sub); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); fetchState(sub); }
+  }
+  async function reset(){
+    setState({});
+    try{ await rpc("routine_reset",{ p_token:session.token, p_list:sub }); fetchState(sub); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); fetchState(sub); }
+  }
+
+  const done = Object.keys(state).length;
+  return (
+    <div className="pad">
+      <div className="seg">
+        {Object.keys(ROUTINES).map(k=>(
+          <button key={k} className={sub===k?"on":""} onClick={()=>setSub(k)}>{shortName(k)}</button>
+        ))}
+      </div>
+
+      <a className="alert" href="sms:48494875">
+        <span className="ico">✉︎</span>
+        <span className="txt"><b>{cfg.alert}</b><span>48 49 48 75</span></span>
+      </a>
+
+      {err && <div className="msg err">{err}</div>}
+
+      <div className="listhead">
+        <div className="eyebrow" style={{margin:0}}>{cfg.title}</div>
+        <div className="row">{done} / {cfg.items.length} ferdig</div>
+      </div>
+
+      {loading ? <div className="empty">Laster…</div> :
+        <div className="plist">
+          {cfg.items.map((it,i)=>{
+            const on = !!state[i];
+            return (
+              <div key={i} className={"pitem"+(on?" done":"")}>
+                <div className="check" onClick={()=>toggle(i)}>
+                  <svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6"/></svg></div>
+                <div className="pbody" onClick={()=>toggle(i)}>
+                  <div className="pt">{it.t}</div>
+                  {it.n && <div className="pn">{it.n}</div>}
+                  {on && state[i].done_by && <div className="pmeta">✓ {state[i].done_by}</div>}
+                </div>
+                {cfg.stamp && on && <span className="stamp">{fmtStamp(state[i].done_at)}</span>}
+              </div>
+            );
+          })}
+        </div>}
+
+      <div className="resetwrap">
+        <Confirm className="btn btn-danger" label={"Nullstill "+shortName(sub).toLowerCase()}
+          ask="Trykk igjen – nullstill" onConfirm={reset} />
+      </div>
+    </div>
+  );
+}
+
 /* ---------- SHELL ---------- */
 function Shell({session, onLogout}){
   const isOwner = session.role === "owner";
@@ -386,13 +544,13 @@ function Shell({session, onLogout}){
           <button className="logout" onClick={logout}>Logg ut</button>
         </div>
       </div>
-      {isOwner &&
-        <div className="tabs">
-          <div className={"tab"+(tab==="prep"?" on":"")} onClick={()=>setTab("prep")}>Prep</div>
-          <div className={"tab"+(tab==="workers"?" on":"")} onClick={()=>setTab("workers")}>Ansatte</div>
-        </div>}
-      {tab==="workers" && isOwner
-        ? <WorkersPage session={session} onAuthFail={onLogout} />
+      <div className="tabs">
+        <div className={"tab"+(tab==="prep"?" on":"")} onClick={()=>setTab("prep")}>Prep</div>
+        <div className={"tab"+(tab==="lister"?" on":"")} onClick={()=>setTab("lister")}>Lister</div>
+        {isOwner && <div className={"tab"+(tab==="workers"?" on":"")} onClick={()=>setTab("workers")}>Ansatte</div>}
+      </div>
+      {tab==="workers" && isOwner ? <WorkersPage session={session} onAuthFail={onLogout} />
+        : tab==="lister" ? <RoutinePage session={session} onAuthFail={onLogout} />
         : <PrepPage session={session} onAuthFail={onLogout} />}
     </div>
   );
