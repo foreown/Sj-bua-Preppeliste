@@ -461,6 +461,7 @@ function ListsPage({session, onAuthFail}){
 function ActivityPage({session, onAuthFail}){
   const [log,setLog]=useState([]); const [loading,setLoading]=useState(true); const [err,setErr]=useState("");
   const [day,setDay]=useState("");
+  const isEditor = session.role==="owner" || session.role==="admin";
 
   const fetchLog = useCallback(async ()=>{
     try{ const data = await rpc("activity_get",{ p_token:session.token }); setLog(data||[]); setErr(""); }
@@ -469,6 +470,11 @@ function ActivityPage({session, onAuthFail}){
   },[session.token, onAuthFail]);
   useEffect(()=>{ fetchLog(); const id=setInterval(fetchLog,30000); const onF=()=>fetchLog();
     window.addEventListener("focus",onF); return ()=>{ clearInterval(id); window.removeEventListener("focus",onF); }; },[fetchLog]);
+
+  async function clearLog(){
+    try{ await rpc("activity_clear",{ p_token:session.token }); setDay(""); await fetchLog(); }
+    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+  }
 
   const byDay={}; const dayOrder=[];
   log.forEach(e=>{ const k=dayKey(e.at); if(!byDay[k]){ byDay[k]=[]; dayOrder.push(k); } byDay[k].push(e); });
@@ -532,6 +538,11 @@ function ActivityPage({session, onAuthFail}){
             </div>
           ))
         )}
+
+      {isEditor && log.length>0 &&
+        <div className="resetwrap">
+          <Confirm className="btn btn-danger" label="Tøm hele loggen" ask="Trykk igjen – tøm alt" onConfirm={clearLog} />
+        </div>}
     </div>
   );
 }
