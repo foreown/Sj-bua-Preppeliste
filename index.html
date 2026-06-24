@@ -6,7 +6,10 @@
 <title>Kjøkken</title>
 <meta name="theme-color" content="#C9CED1" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <meta name="apple-mobile-web-app-title" content="Kjøkken" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-180.png" />
 
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
@@ -41,6 +44,7 @@
   .who .role{font-family:var(--mono);font-size:10px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.9);padding:1px 6px;border-radius:99px;margin-left:6px;color:#3C4348;text-transform:uppercase;letter-spacing:.05em;}
   .logout{flex:none;font-family:var(--sans);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#5A6166;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.85);padding:8px 12px;border-radius:9px;cursor:pointer;}
   .logout:active{transform:scale(.97);}
+  .offbar{background:var(--alert-bg);color:#8A2D08;font-size:12px;font-weight:600;text-align:center;padding:7px 12px;border-bottom:1px solid var(--alert-line);}
 
   .tabs{max-width:580px;margin:0 auto;display:flex;gap:6px;padding:12px 12px 4px;}
   .tab{flex:1;text-align:center;font-size:12.5px;font-weight:700;letter-spacing:.02em;color:#6A7176;background:var(--surface);border:1px solid var(--line);padding:11px 4px;border-radius:11px;cursor:pointer;transition:all .15s ease;}
@@ -99,7 +103,6 @@
   .r-admin{background:#ECEAF6;color:#5B53C6;border:1px solid #D9D5F0;}
   .r-worker{background:#EEF1F2;color:#5A6166;border:1px solid var(--line);}
 
-  /* routine + edit lists */
   .seg{display:flex;gap:6px;background:#DFE3E5;border:1px solid var(--line-strong);border-radius:12px;padding:4px;margin-bottom:12px;}
   .seg button{flex:1;appearance:none;border:none;cursor:pointer;font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.02em;color:#5A6166;background:transparent;padding:9px 8px;border-radius:9px;transition:all .15s ease;}
   .seg button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.1);}
@@ -119,12 +122,17 @@
   .iconbtn{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:#fff;color:#5A6166;font-size:16px;cursor:pointer;display:grid;place-items:center;}
   .iconbtn[disabled]{opacity:.4;cursor:default;}
 
-  /* overview / log */
   .statrow{display:flex;gap:10px;margin-bottom:8px;}
   .stat{flex:1;background:#FBFCFC;border:1px solid var(--line);border-radius:11px;padding:10px;text-align:center;}
   .stat .num{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1;}
   .stat .lab{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:4px;}
   .hint2{font-size:11.5px;color:#9AA1A6;}
+  .daynav{display:flex;align-items:center;gap:8px;margin:14px 0 0;}
+  .daynav input[type=date]{flex:1;font-family:var(--sans);font-size:15px;color:var(--ink);background:#FBFCFC;border:1.5px solid var(--line-strong);border-radius:10px;padding:11px 12px;outline:none;}
+  .daynav input[type=date]:focus{border-color:var(--done);background:#fff;}
+  .daynav .nav{width:42px;height:42px;border-radius:10px;border:1px solid var(--line);background:#fff;color:#5A6166;font-size:20px;cursor:pointer;display:grid;place-items:center;flex:none;}
+  .daynav .nav[disabled]{opacity:.4;cursor:default;}
+  .dayclear{text-align:center;margin-top:9px;}
   .daygroup{margin-top:16px;}
   .dayhead{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:capitalize;color:#4C5358;padding:0 4px 8px;}
   .logitem{display:flex;align-items:flex-start;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:11px 12px;margin-bottom:7px;}
@@ -151,6 +159,13 @@
 </head>
 <body>
 <div id="root"></div>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("sw.js").catch(function () {});
+    });
+  }
+</script>
 
 <script type="text/babel" data-presets="react">
 /* @jsxRuntime classic */
@@ -192,6 +207,7 @@ const nbDateTime = iso => { if(!iso) return ""; try{ return new Date(iso).toLoca
 const nbTime = iso => { if(!iso) return ""; try{ return new Date(iso).toLocaleTimeString("nb-NO",{hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } };
 const nbDay = iso => { try{ return new Date(iso).toLocaleDateString("nb-NO",{weekday:"long",day:"numeric",month:"long"}); }catch(e){ return ""; } };
 const fmtStamp = iso => { if(!iso) return ""; try{ const d=new Date(iso); const p=n=>n<10?"0"+n:""+n; return p(d.getDate())+"."+p(d.getMonth()+1); }catch(e){ return ""; } };
+const dayKey = iso => { try{ const d=new Date(iso); const p=n=>n<10?"0"+n:""+n; return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate()); }catch(e){ return ""; } };
 
 /* ---------- two-step confirm ---------- */
 function Confirm({label, ask, onConfirm, className}){
@@ -243,7 +259,7 @@ function Login({onLogin}){
   );
 }
 
-/* ---------- PREP BOARD (alle innloggede) ---------- */
+/* ---------- PREP BOARD ---------- */
 function PrepPage({session, onAuthFail}){
   const [items,setItems]=useState([]);
   const [title,setTitle]=useState(""); const [note,setNote]=useState("");
@@ -313,7 +329,7 @@ function PrepPage({session, onAuthFail}){
   );
 }
 
-/* ---------- EDIT ROW (eier/admin) ---------- */
+/* ---------- EDIT ROW ---------- */
 function EditRow({item, first, last, onSave, onDelete, onMove}){
   const [title,setTitle]=useState(item.title);
   const [note,setNote]=useState(item.note||"");
@@ -337,7 +353,7 @@ function EditRow({item, first, last, onSave, onDelete, onMove}){
   );
 }
 
-/* ---------- FASTE LISTER (DB, delt, redigerbar) ---------- */
+/* ---------- FASTE LISTER ---------- */
 function ListsPage({session, onAuthFail}){
   const isEditor = session.role==="owner" || session.role==="admin";
   const [sub,setSub]=useState("preppeliste");
@@ -362,7 +378,7 @@ function ListsPage({session, onAuthFail}){
     return ()=>{ clearInterval(id); window.removeEventListener("focus", onF); };
   },[sub, edit, fetchItems]);
 
-  async function run(fn,args){
+  async function runOp(fn,args){
     try{ await rpc(fn,args); await fetchItems(sub); }
     catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
   }
@@ -372,13 +388,13 @@ function ListsPage({session, onAuthFail}){
     try{ await rpc("list_toggle",{ p_token:session.token, p_id:id }); fetchItems(sub); }
     catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); fetchItems(sub); }
   }
-  const reset = () => run("list_reset",{ p_token:session.token, p_list:sub });
+  const reset = () => runOp("list_reset",{ p_token:session.token, p_list:sub });
   async function addItem(){ if(!nt.trim()) return;
-    await run("item_add",{ p_token:session.token, p_list:sub, p_title:nt.trim(), p_note:nn.trim()||null });
+    await runOp("item_add",{ p_token:session.token, p_list:sub, p_title:nt.trim(), p_note:nn.trim()||null });
     setNt(""); setNn(""); }
-  const saveItem = (id,title,note) => run("item_update",{ p_token:session.token, p_id:id, p_title:title, p_note:note||null });
-  const delItem = id => run("item_delete",{ p_token:session.token, p_id:id });
-  const move = (id,dir) => run("item_move",{ p_token:session.token, p_id:id, p_dir:dir });
+  const saveItem = (id,title,note) => runOp("item_update",{ p_token:session.token, p_id:id, p_title:title, p_note:note||null });
+  const delItem = id => runOp("item_delete",{ p_token:session.token, p_id:id });
+  const move = (id,dir) => runOp("item_move",{ p_token:session.token, p_id:id, p_dir:dir });
 
   const done = items.filter(i=>i.done).length;
   return (
@@ -441,9 +457,11 @@ function ListsPage({session, onAuthFail}){
   );
 }
 
-/* ---------- OVERSIKT / LOGG (siste 30 dager) ---------- */
+/* ---------- OVERSIKT / LOGG ---------- */
 function ActivityPage({session, onAuthFail}){
   const [log,setLog]=useState([]); const [loading,setLoading]=useState(true); const [err,setErr]=useState("");
+  const [day,setDay]=useState("");
+
   const fetchLog = useCallback(async ()=>{
     try{ const data = await rpc("activity_get",{ p_token:session.token }); setLog(data||[]); setErr(""); }
     catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
@@ -452,14 +470,31 @@ function ActivityPage({session, onAuthFail}){
   useEffect(()=>{ fetchLog(); const id=setInterval(fetchLog,30000); const onF=()=>fetchLog();
     window.addEventListener("focus",onF); return ()=>{ clearInterval(id); window.removeEventListener("focus",onF); }; },[fetchLog]);
 
-  const groups=[]; const map={};
-  log.forEach(e=>{ const key=nbDay(e.at); if(!map[key]){ map[key]=[]; groups.push(key); } map[key].push(e); });
+  const byDay={}; const dayOrder=[];
+  log.forEach(e=>{ const k=dayKey(e.at); if(!byDay[k]){ byDay[k]=[]; dayOrder.push(k); } byDay[k].push(e); });
   const doneCount = log.filter(e=>e.action==="gjort").length;
   const missCount = log.filter(e=>e.action==="ikke gjort").length;
+
+  const today = dayKey(new Date().toISOString());
+  const minDay = (()=>{ const d=new Date(); d.setDate(d.getDate()-30); return dayKey(d.toISOString()); })();
+  const idx = day ? dayOrder.indexOf(day) : -1;
+  const olderDay = idx>=0 && idx<dayOrder.length-1 ? dayOrder[idx+1] : null;
+  const newerDay = idx>0 ? dayOrder[idx-1] : null;
+
   const badge = a => a==="gjort" ? {cls:"b-done",txt:"Gjort"}
     : a==="ikke gjort" ? {cls:"b-miss",txt:"Ikke gjort"}
     : a==="angret" ? {cls:"b-undo",txt:"Angret"}
     : {cls:"b-reset",txt:"Nullstilt"};
+  const renderEntry = (e,i)=>{ const b=badge(e.action); return (
+    <div key={i} className="logitem">
+      <span className={"lbadge "+b.cls}>{b.txt}</span>
+      <div className="lbody">
+        <div className="ltitle">{e.item_title}<span className="llist">{LIST_LABEL[e.list]||e.list}</span></div>
+        <div className="lmeta">{nbTime(e.at)}{e.actor? " · "+e.actor:""}</div>
+      </div>
+    </div>
+  ); };
+  const labelFor = k => { const arr=byDay[k]; if(arr) return nbDay(arr[0].at); try{ return nbDay(k+"T12:00:00"); }catch(_){ return k; } };
 
   return (
     <div className="pad">
@@ -471,23 +506,32 @@ function ActivityPage({session, onAuthFail}){
         </div>
         <div className="hint2">Aktivitet eldre enn 30 dager slettes automatisk.</div>
       </div>
+
+      <div className="daynav">
+        <button className="nav" disabled={!olderDay} onClick={()=>olderDay&&setDay(olderDay)}>‹</button>
+        <input type="date" value={day} min={minDay} max={today} onChange={e=>setDay(e.target.value)} />
+        <button className="nav" disabled={!newerDay} onClick={()=>newerDay&&setDay(newerDay)}>›</button>
+      </div>
+      {day && <div className="dayclear"><button className="btn btn-sm" onClick={()=>setDay("")}>Vis alle dager</button></div>}
+
       {err && <div style={{marginTop:12}} className="msg err">{err}</div>}
+
       {loading ? <div className="empty">Laster…</div> :
-        log.length===0 ? <div className="empty">Ingen aktivitet enda.</div> :
-        groups.map(g=>(
-          <div key={g} className="daygroup">
-            <div className="dayhead">{g}</div>
-            {map[g].map((e,i)=>{ const b=badge(e.action); return (
-              <div key={i} className="logitem">
-                <span className={"lbadge "+b.cls}>{b.txt}</span>
-                <div className="lbody">
-                  <div className="ltitle">{e.item_title}<span className="llist">{LIST_LABEL[e.list]||e.list}</span></div>
-                  <div className="lmeta">{nbTime(e.at)}{e.actor? " · "+e.actor:""}</div>
-                </div>
-              </div>
-            );})}
+        day ? (
+          <div className="daygroup">
+            <div className="dayhead">{labelFor(day)}</div>
+            {(byDay[day]||[]).length===0 ? <div className="empty">Ingen aktivitet denne dagen.</div>
+              : byDay[day].map(renderEntry)}
           </div>
-        ))}
+        ) : (
+          log.length===0 ? <div className="empty">Ingen aktivitet enda.</div> :
+          dayOrder.map(k=>(
+            <div key={k} className="daygroup">
+              <div className="dayhead">{labelFor(k)}</div>
+              {byDay[k].map(renderEntry)}
+            </div>
+          ))
+        )}
     </div>
   );
 }
@@ -585,7 +629,12 @@ function WorkersPage({session, onAuthFail}){
 function Shell({session, onLogout}){
   const isOwner = session.role === "owner";
   const [tab,setTab]=useState("prep");
+  const [online,setOnline]=useState(typeof navigator!=="undefined" ? navigator.onLine : true);
+  useEffect(()=>{ const on=()=>setOnline(true), off=()=>setOnline(false);
+    window.addEventListener("online",on); window.addEventListener("offline",off);
+    return ()=>{ window.removeEventListener("online",on); window.removeEventListener("offline",off); }; },[]);
   async function logout(){ try{ await rpc("app_logout",{ p_token:session.token }); }catch(e){} clearSession(); onLogout(); }
+
   return (
     <div className="wrap">
       <div className="steel">
@@ -596,6 +645,7 @@ function Shell({session, onLogout}){
           </div>
           <button className="logout" onClick={logout}>Logg ut</button>
         </div>
+        {!online && <div className="offbar">Frakoblet – avhuking og endringer krever nett</div>}
       </div>
       <div className="tabs">
         <div className={tab==="prep"?"tab on":"tab"} onClick={()=>setTab("prep")}>Prep</div>
