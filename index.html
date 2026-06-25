@@ -264,15 +264,39 @@ function rangeText(min,max){
   if(has(min)) return "≥ "+min+" °C";
   return "Ingen grense satt";
 }
-function downloadCSV(filename, rows){
+function buildCSV(rows){
   const headers = rows.length ? Object.keys(rows[0]) : [];
   const esc = v => '"'+String(v==null?"":v).replace(/"/g,'""')+'"';
-  const csv = [headers.join(",")].concat(rows.map(r=>headers.map(h=>esc(r[h])).join(","))).join("\n");
-  const blob = new Blob(["\ufeff"+csv], {type:"text/csv;charset=utf-8;"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a"); a.href=url; a.download=filename;
-  document.body.appendChild(a); a.click();
-  setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1000);
+  return "\ufeff" + [headers.join(",")].concat(rows.map(r=>headers.map(h=>esc(r[h])).join(","))).join("\r\n");
+}
+function makeFile(name, text, mime){
+  try{ return new File([text], name, { type:mime }); }
+  catch(e){ const b=new Blob([text],{type:mime}); b.name=name; return b; }
+}
+/* Robust på både nettside og installert PWA:
+   – mobil/PWA: systemets delingsark (Web Share m/ fil)
+   – PC/Android: vanlig nedlasting
+   – siste utvei: åpne i ny fane. navigator.share kalles synkront i klikket. */
+async function saveOrShare(file){
+  try{
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      await navigator.share({ files:[file], title:file.name });
+      return true;
+    }
+  }catch(e){ if(e && e.name==="AbortError") return true; }
+  try{
+    const url=URL.createObjectURL(file);
+    const a=document.createElement("a"); a.href=url; a.download=file.name;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1500);
+    return true;
+  }catch(e){}
+  try{
+    const url=URL.createObjectURL(file);
+    const w=window.open(url,"_blank");
+    if(w) return true;
+  }catch(e){}
+  return false;
 }
 
 /* ---------- confirm ---------- */
@@ -752,25 +776,37 @@ function ActivityPage({session, onAuthFail}){
   const isEditor = session.role==="owner" || session.role==="admin";
   const isOwner = session.role==="owner";
   const [log,setLog]=useState([]); const [loading,setLoading]=useState(true); const [err,setErr]=useState("");
-  const [day,setDay]=useState("");
+  const [day,setDay]=useState(""); const [exportText,setExportText]=useState("");
 
   const fetchLog = useCallback(async ()=>{
     try{ const data = await rpc("activity_get",{ p_token:session.token }); setLog(data||[]); setErr(""); }
     catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
     setLoading(false);
   },[session.token, onAuthFail]);
+
+  // Forhåndslag CSV (live + arkiv) så delingsarket kan utløses synkront ved trykk – virker i både nettleser og PWA
+  const buildExport = useCallback(async ()=>{
+    if(!isEditor) return;
+    try{ const data = await rpc("activity_export",{ p_token:session.token });
+      const rows = (data||[]).map(e=>({ dato:dayKey(e.at), tid:nbTime(e.at), liste:LIST_LABEL[e.list]||e.list, oppgave:e.item_title, handling:e.action, hvem:e.actor||"" }));
+      setExportText(rows.length ? buildCSV(rows) : ""); }
+    catch(e){ /* stille – knappen melder fra hvis tom */ }
+  },[session.token, isEditor]);
+
   useEffect(()=>{ fetchLog(); const id=setInterval(fetchLog,30000); const onF=()=>fetchLog();
     window.addEventListener("focus",onF); return ()=>{ clearInterval(id); window.removeEventListener("focus",onF); }; },[fetchLog]);
+  useEffect(()=>{ buildExport(); const onF=()=>buildExport();
+    window.addEventListener("focus",onF); return ()=>window.removeEventListener("focus",onF); },[buildExport]);
 
-  async function exportCSV(){
-    try{ const data = await rpc("activity_export",{ p_token:session.token });
-      const rows = (data||[]).map(e=>({ dato:dayKey(e.at), tid:nbTime(e.at), liste:e.list, oppgave:e.item_title, handling:e.action, hvem:e.actor||"" }));
-      if(rows.length===0){ setErr("Ingen logg å eksportere"); return; }
-      downloadCSV("kjokken-logg.csv", rows); }
-    catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
+  function exportCSV(){
+    if(!isEditor) return;
+    if(!exportText){ setErr("Ingen logg å eksportere ennå"); return; }
+    setErr("");
+    const file = makeFile("kjokken-logg.csv", exportText, "text/csv;charset=utf-8;");
+    saveOrShare(file).then(ok=>{ if(!ok) setErr("Eksport støttes ikke i denne nettleseren – prøv en annen."); }).catch(()=>{});
   }
   async function clearLog(){
-    try{ await rpc("activity_clear",{ p_token:session.token }); setDay(""); await fetchLog(); }
+    try{ await rpc("activity_clear",{ p_token:session.token }); setDay(""); await fetchLog(); await buildExport(); }
     catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); }
   }
 
