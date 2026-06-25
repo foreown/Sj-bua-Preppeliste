@@ -128,6 +128,7 @@
   .rbadge{font-family:var(--mono);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px;border-radius:99px;margin-left:6px;vertical-align:middle;}
   .r-admin{background:#ECEAF6;color:#5B53C6;border:1px solid #D9D5F0;}
   .r-worker{background:#EEF1F2;color:#5A6166;border:1px solid var(--line);}
+  .r-owner{background:#FBEFD6;color:#8A5A00;border:1px solid #F0DCA8;}
 
   .chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin-bottom:12px;}
   .chips::-webkit-scrollbar{display:none;}
@@ -162,6 +163,11 @@
   .tbadge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:3px 8px;border-radius:7px;white-space:nowrap;}
   .t-ok{background:var(--done-tint);color:var(--done-deep);border:1px solid #CDE9D6;}
   .t-avvik{background:var(--alert-bg);color:var(--alert-ink);border:1px solid var(--alert-line);}
+  .t-warn{background:var(--warn-bg);color:var(--warn-ink);border:1px solid var(--warn-line);}
+  .banner-warn{background:var(--warn-bg);border:1px solid var(--warn-line);color:var(--warn-ink);font-size:13px;font-weight:600;border-radius:11px;padding:10px 13px;margin-bottom:10px;}
+  .imgrow{display:flex;align-items:center;gap:9px;margin-bottom:11px;flex-wrap:wrap;}
+  .composethumb{max-height:130px;max-width:100%;border-radius:11px;border:1px solid var(--line);display:block;margin-bottom:11px;}
+  .msgimg{max-width:100%;max-height:280px;border-radius:11px;border:1px solid var(--line);display:block;margin-top:9px;}
   .readrow{display:flex;gap:8px;margin-top:11px;}
   .readrow input.in{flex:1;}
   .readrow .unitc{flex:none;align-self:center;font-family:var(--mono);font-size:13px;color:var(--muted);}
@@ -287,6 +293,7 @@
   [data-theme="dark"] .wrow{background:#171B1E;}
   [data-theme="dark"] .r-admin{background:#272445;color:#B7B0F0;border-color:#3A3560;}
   [data-theme="dark"] .r-worker{background:#2A3034;color:#AEB6BB;}
+  [data-theme="dark"] .r-owner{background:#33290F;color:#E8B24E;border-color:#4A3D18;}
 
   /* logg */
   [data-theme="dark"] .stat{background:#171B1E;}
@@ -421,7 +428,37 @@ async function saveOrShare(file){
   return false;
 }
 
-/* ---------- tema-bryter ---------- */
+/* Krymp bilder fra mobil før opplasting (sparer lagring og data) */
+function resizeImage(file, maxDim, quality){
+  return new Promise((resolve)=>{
+    try{
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = ()=>{
+        try{
+          let w = img.width, h = img.height;
+          if(w >= h && w > maxDim){ h = Math.round(h*maxDim/w); w = maxDim; }
+          else if(h > w && h > maxDim){ w = Math.round(w*maxDim/h); h = maxDim; }
+          const cv = document.createElement("canvas"); cv.width=w; cv.height=h;
+          cv.getContext("2d").drawImage(img,0,0,w,h);
+          URL.revokeObjectURL(url);
+          if(cv.toBlob){ cv.toBlob((b)=>resolve(b||file), "image/jpeg", quality||0.82); }
+          else resolve(file);
+        }catch(e){ try{URL.revokeObjectURL(url);}catch(_){}; resolve(file); }
+      };
+      img.onerror = ()=>{ try{URL.revokeObjectURL(url);}catch(_){}; resolve(file); };
+      img.src = url;
+    }catch(e){ resolve(file); }
+  });
+}
+async function uploadPhoto(file){
+  const blob = await resizeImage(file, 1400, 0.82);
+  const path = "msg/" + Date.now() + "-" + Math.random().toString(36).slice(2,9) + ".jpg";
+  const up = await db.storage.from("kitchen-photos").upload(path, blob, { contentType:"image/jpeg", upsert:false });
+  if(up.error) throw new Error(up.error.message || "Kunne ikke laste opp bildet");
+  const pub = db.storage.from("kitchen-photos").getPublicUrl(path);
+  return pub.data.publicUrl;
+}
 function ThemeToggle({theme, onToggle, className}){
   const dark = theme==="dark";
   return (
@@ -782,14 +819,25 @@ function TempPage({session, onAuthFail}){
   const [units,setUnits]=useState([]); const [loading,setLoading]=useState(true); const [err,setErr]=useState("");
   const [vals,setVals]=useState({}); const [notes,setNotes]=useState({}); const [hist,setHist]=useState({});
   const [editId,setEditId]=useState(null); const [creating,setCreating]=useState(false);
+  const [tempExportText,setTempExportText]=useState("");
 
   const fetchUnits=useCallback(async()=>{
     try{ const data=await rpc("temp_units_get",{p_token:session.token}); setUnits(data||[]); setErr(""); }
     catch(e){ if(isAuthErr(e)){onAuthFail();return;} setErr(e.message); }
     setLoading(false);
   },[session.token,onAuthFail]);
+  const buildTempExport=useCallback(async()=>{
+    if(!isEditor) return;
+    try{ const data=await rpc("temp_export",{p_token:session.token});
+      const rows=(data||[]).map(r=>({ dato:dayKey(r.tid), tid:nbTime(r.tid), enhet:r.enhet, type:(KIND_LABEL[r.type]||r.type),
+        verdi_C:r.verdi, status:r.status, grense:rangeText(r.min,r.max), merknad:r.merknad||"", av:r.av||"" }));
+      setTempExportText(rows.length? buildCSV(rows): ""); }
+    catch(e){}
+  },[session.token, isEditor]);
   useEffect(()=>{ fetchUnits(); const id=setInterval(()=>{ if(!editId&&!creating) fetchUnits(); },30000); const onF=()=>{ if(!editId&&!creating) fetchUnits(); };
     window.addEventListener("focus",onF); return ()=>{clearInterval(id); window.removeEventListener("focus",onF);}; },[fetchUnits, editId, creating]);
+  useEffect(()=>{ buildTempExport(); const onF=()=>buildTempExport();
+    window.addEventListener("focus",onF); return ()=>window.removeEventListener("focus",onF); },[buildTempExport]);
 
   async function loadHist(id){
     try{ const data=await rpc("temp_readings_get",{p_token:session.token,p_unit_id:id,p_limit:15}); setHist(s=>({...s,[id]:data||[]})); }
@@ -799,14 +847,27 @@ function TempPage({session, onAuthFail}){
   async function addReading(id){
     const raw=(vals[id]||"").replace(",",".").trim();
     if(raw==="" || isNaN(Number(raw))){ setErr("Skriv inn en temperatur"); return; }
-    try{ await rpc("temp_reading_add",{p_token:session.token,p_unit_id:id,p_value:Number(raw),p_note:(notes[id]||"").trim()||null});
-      setVals(s=>({...s,[id]:""})); setNotes(s=>({...s,[id]:""})); setErr(""); await fetchUnits(); if(hist[id]) loadHist(id); }
+    const u = units.find(x=>x.id===id); const val = Number(raw);
+    const out = u && ((u.min_c!=null && val<u.min_c) || (u.max_c!=null && val>u.max_c));
+    if(out && !(notes[id]||"").trim()){ setErr("Utenfor grensa – skriv en kort merknad om hva som ble gjort"); return; }
+    try{ await rpc("temp_reading_add",{p_token:session.token,p_unit_id:id,p_value:val,p_note:(notes[id]||"").trim()||null});
+      setVals(s=>({...s,[id]:""})); setNotes(s=>({...s,[id]:""})); setErr(""); await fetchUnits(); buildTempExport(); if(hist[id]) loadHist(id); }
     catch(e){ if(isAuthErr(e)){onAuthFail();return;} setErr(e.message); }
+  }
+  function exportTemp(){
+    if(!tempExportText){ setErr("Ingen temperaturlogg å eksportere ennå"); return; }
+    setErr("");
+    const file = makeFile("temperaturlogg.csv", tempExportText, "text/csv;charset=utf-8;");
+    saveOrShare(file).then(ok=>{ if(!ok) setErr("Eksport støttes ikke i denne nettleseren."); }).catch(()=>{});
   }
   async function createUnit(v){ await safe("temp_unit_add",{p_token:session.token,p_name:v.name,p_kind:v.kind,p_min:v.min,p_max:v.max}, ()=>{ setCreating(false); }); }
   async function saveUnit(id,v){ await safe("temp_unit_update",{p_token:session.token,p_id:id,p_name:v.name,p_kind:v.kind,p_min:v.min,p_max:v.max}, ()=>{ setEditId(null); }); }
   async function delUnit(id){ await safe("temp_unit_delete",{p_token:session.token,p_id:id}, ()=>{ setEditId(null); }); }
   async function safe(fn,args,after){ try{ await rpc(fn,args); if(after) after(); await fetchUnits(); }catch(e){ if(isAuthErr(e)){onAuthFail();return;} setErr(e.message); } }
+
+  const todayKey = dayKey(new Date().toISOString());
+  const loggedToday = (u)=> !!(u.last_at && dayKey(u.last_at)===todayKey);
+  const missingToday = units.filter(u=>!loggedToday(u)).length;
 
   return (
     <div className="pad">
@@ -814,7 +875,12 @@ function TempPage({session, onAuthFail}){
         <div className="eyebrow" style={{margin:0}}>Temperaturkontroll</div>
         {isEditor && <button className="btn btn-sm" onClick={()=>{ setCreating(c=>!c); setEditId(null); }}>{creating?"Lukk":"+ Ny enhet"}</button>}
       </div>
-      <div className="hint2" style={{margin:"0 4px 10px"}}>Logg temperatur på kjøl/frys. Avvik utenfor grensene markeres rødt.</div>
+      <div className="hint2" style={{margin:"0 4px 10px"}}>Logg temperatur på kjøl/frys. Avvik utenfor grensene markeres rødt og krever en kort merknad.</div>
+
+      {!loading && units.length>0 && missingToday>0 &&
+        <div className="banner-warn">{missingToday===1 ? "1 enhet er ikke logget i dag" : missingToday+" enheter er ikke logget i dag"}</div>}
+      {isEditor && units.length>0 &&
+        <button className="btn btn-sm" style={{width:"100%",marginBottom:10}} onClick={exportTemp}>Eksporter temperaturlogg (CSV)</button>}
 
       {err && <div className="msg err">{err}</div>}
       {creating && isEditor && <TempUnitForm submitLabel="Opprett enhet" onSubmit={createUnit} onCancel={()=>setCreating(false)} />}
@@ -830,7 +896,10 @@ function TempPage({session, onAuthFail}){
                 <div className="unit-name">{u.name}</div>
                 <div className="unit-sub">{KIND_LABEL[u.kind]||"Annet"} · {rangeText(u.min_c,u.max_c)}</div>
               </div>
-              {u.last_value!=null && <span className={"tbadge "+(u.last_status==="avvik"?"t-avvik":"t-ok")}>{u.last_status==="avvik"?"Avvik":"OK"}</span>}
+              <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:6,flex:"none"}}>
+                {!loggedToday(u) && <span className="tbadge t-warn">Ikke logget i dag</span>}
+                {u.last_value!=null && <span className={"tbadge "+(u.last_status==="avvik"?"t-avvik":"t-ok")}>{u.last_status==="avvik"?"Avvik":"OK"}</span>}
+              </div>
             </div>
             <div className="unit-last">
               {u.last_value!=null
@@ -846,7 +915,7 @@ function TempPage({session, onAuthFail}){
                 value={vals[u.id]||""} onChange={e=>setVals(s=>({...s,[u.id]:e.target.value}))} onKeyDown={e=>{ if(e.key==="Enter") addReading(u.id); }} />
               <button className="btn btn-sm" onClick={()=>addReading(u.id)}>Lagre</button>
             </div>
-            <input className="in" style={{marginTop:8}} placeholder="Notat (valgfritt)" value={notes[u.id]||""} onChange={e=>setNotes(s=>({...s,[u.id]:e.target.value}))} />
+            <input className="in" style={{marginTop:8}} placeholder="Merknad (påkrevd ved avvik)" value={notes[u.id]||""} onChange={e=>setNotes(s=>({...s,[u.id]:e.target.value}))} />
 
             <div style={{marginTop:10}}><button className="btn btn-sm" onClick={()=>toggleHist(u.id)}>{hist[u.id]?"Skjul historikk":"Vis historikk"}</button></div>
             {hist[u.id] && <div className="hist">
@@ -869,6 +938,8 @@ function MessagesPage({session, onAuthFail}){
   const isEditor = session.role==="owner" || session.role==="admin";
   const [msgs,setMsgs]=useState([]); const [body,setBody]=useState("");
   const [err,setErr]=useState(""); const [loading,setLoading]=useState(true); const [busy,setBusy]=useState(false);
+  const [pendingImage,setPendingImage]=useState(""); const [uploading,setUploading]=useState(false);
+  const fileRef = useRef(null);
 
   const fetchMsgs=useCallback(async()=>{
     try{ const data=await rpc("messages_get",{p_token:session.token}); setMsgs(data||[]); setErr(""); }
@@ -878,8 +949,19 @@ function MessagesPage({session, onAuthFail}){
   useEffect(()=>{ fetchMsgs(); const id=setInterval(fetchMsgs,20000); const onF=()=>fetchMsgs();
     window.addEventListener("focus",onF); return ()=>{clearInterval(id); window.removeEventListener("focus",onF);}; },[fetchMsgs]);
 
-  async function post(){ if(!body.trim()) return; setBusy(true);
-    try{ await rpc("message_add",{p_token:session.token,p_body:body.trim()}); setBody(""); await fetchMsgs(); }
+  async function onPickFile(e){
+    const file = e.target.files && e.target.files[0];
+    e.target.value = "";
+    if(!file) return;
+    setErr(""); setUploading(true);
+    try{ const url = await uploadPhoto(file); setPendingImage(url); }
+    catch(err){ setErr(err.message); }
+    setUploading(false);
+  }
+  async function post(){
+    if(!body.trim() && !pendingImage) return; setBusy(true);
+    try{ await rpc("message_add",{p_token:session.token,p_body:body.trim()||null,p_image_url:pendingImage||null});
+      setBody(""); setPendingImage(""); await fetchMsgs(); }
     catch(e){ if(isAuthErr(e)){onAuthFail();return;} setErr(e.message); } setBusy(false); }
   async function op(fn,args){ try{ await rpc(fn,args); await fetchMsgs(); }catch(e){ if(isAuthErr(e)){onAuthFail();return;} setErr(e.message); } }
 
@@ -889,7 +971,15 @@ function MessagesPage({session, onAuthFail}){
         <div className="eyebrow">Ny beskjed</div>
         <label className="fld"><input className="in" value={body} onChange={e=>setBody(e.target.value)}
           onKeyDown={e=>{ if(e.key==="Enter") post(); }} placeholder="f.eks. Tom for tomater · Ovn 2 funker dårlig" /></label>
-        <button className="btn btn-primary" disabled={busy || !body.trim()} onClick={post}>{busy?"Legger ut…":"Legg ut beskjed"}</button>
+        <div className="imgrow">
+          <button type="button" className="btn btn-sm" disabled={uploading} onClick={()=>fileRef.current&&fileRef.current.click()}>
+            {uploading ? "Laster opp…" : (pendingImage ? "Bytt bilde" : "Legg ved bilde")}
+          </button>
+          {pendingImage && <button type="button" className="btn btn-danger" onClick={()=>setPendingImage("")}>Fjern bilde</button>}
+        </div>
+        {pendingImage && <a href={pendingImage} target="_blank" rel="noopener noreferrer"><img src={pendingImage} className="composethumb" alt="forhåndsvisning" /></a>}
+        <input ref={fileRef} type="file" accept="image/*" style={{display:"none"}} onChange={onPickFile} />
+        <button className="btn btn-primary" disabled={busy || uploading || (!body.trim() && !pendingImage)} onClick={post}>{busy?"Legger ut…":"Legg ut beskjed"}</button>
       </div>
       {err && <div style={{marginTop:12}} className="msg err">{err}</div>}
       <div className="eyebrow" style={{margin:"18px 4px 8px"}}>Tavle</div>
@@ -897,7 +987,8 @@ function MessagesPage({session, onAuthFail}){
         msgs.length===0 ? <div className="empty">Ingen beskjeder.</div> :
         msgs.map(m=>(
           <div key={m.id} className={"msgcard"+(m.pinned?" pinned":"")+(m.resolved?" resolved":"")}>
-            <div className="msgbody">{m.pinned && <span className="pinmark">Festet</span>}{m.body}</div>
+            {(m.body || m.pinned) && <div className="msgbody">{m.pinned && <span className="pinmark">Festet</span>}{m.body}</div>}
+            {m.image_url && <a href={m.image_url} target="_blank" rel="noopener noreferrer"><img src={m.image_url} className="msgimg" alt="bilde" /></a>}
             <div className="msgmeta">{m.author||"Ukjent"} · {nbDateTime(m.created_at)}{m.resolved && m.resolved_by? " · løst av "+m.resolved_by:""}</div>
             <div className="msgacts">
               {m.resolved
@@ -1047,7 +1138,7 @@ function WorkersPage({session, onAuthFail}){
     catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); } }
   async function setRole(id, role){ setErr(""); setOk("");
     try{ await rpc("app_set_role",{ p_token:session.token, p_user_id:id, p_role:role }); await fetchWorkers();
-      setOk(role==="admin"?"Bruker er nå administrator":"Bruker er nå ansatt"); }
+      setOk(role==="owner"?"Bruker er nå eier":role==="admin"?"Bruker er nå administrator":"Bruker er nå ansatt"); }
     catch(e){ if(isAuthErr(e)){ onAuthFail(); return; } setErr(e.message); } }
   async function setPassword(id){
     const np = (pw[id]||"").trim();
@@ -1071,33 +1162,39 @@ function WorkersPage({session, onAuthFail}){
         <label className="fld"><span className="lab">Passord</span>
           <input className="in" type="text" value={p} onChange={e=>setP(e.target.value)} placeholder="passord (du velger)" /></label>
         <button className="btn btn-primary" disabled={busy} onClick={create}>{busy ? "Oppretter…" : "Opprett bruker"}</button>
-        <div className="hint2" style={{marginTop:10}}>Nye brukere blir ansatte. Gjør dem til administrator for å gi dem tilgang til å redigere listene, enhetene og temperaturgrensene.</div>
+        <div className="hint2" style={{marginTop:10}}>Nye brukere blir ansatte. Administrator kan redigere lister, enheter og temperaturgrenser. Eier kan i tillegg styre brukere og roller. Du kan ha flere eiere.</div>
       </div>
 
       <div style={{margin:"18px 4px 0"}} className="eyebrow">Brukere ({workers.length})</div>
       {loading ? <div className="empty">Laster…</div> :
         workers.length === 0 ? <div className="empty">Ingen brukere enda.</div> :
         <div style={{marginTop:10}}>
-          {workers.map(w=>(
+          {workers.map(w=>{ const isOwnerRow = w.role==="owner"; return (
             <div key={w.id} className="wrow">
               <div className="wtop">
                 <div style={{minWidth:0}}>
-                  <div className="wname">{w.display_name}<span className={"rbadge "+(w.role==="admin"?"r-admin":"r-worker")}>{w.role==="admin"?"Admin":"Ansatt"}</span></div>
+                  <div className="wname">{w.display_name}<span className={"rbadge "+(isOwnerRow?"r-owner":w.role==="admin"?"r-admin":"r-worker")}>{isOwnerRow?"Eier":w.role==="admin"?"Admin":"Ansatt"}</span></div>
                   <div className="wuser">@{w.username}</div>
                 </div>
-                <Confirm className="btn btn-danger" label="Slett" ask="Slette?" onConfirm={()=>remove(w.id)} />
+                {!isOwnerRow && <Confirm className="btn btn-danger" label="Slett" ask="Slette?" onConfirm={()=>remove(w.id)} />}
               </div>
               <div className="wactions">
-                {w.role==="admin"
-                  ? <button className="btn btn-sm" onClick={()=>setRole(w.id,"worker")}>Fjern admin</button>
-                  : <button className="btn btn-sm" onClick={()=>setRole(w.id,"admin")}>Gjør til admin</button>}
+                {isOwnerRow
+                  ? <Confirm className="btn btn-danger" label="Fjern eier-tilgang" ask="Trykk igjen – fjern eier" onConfirm={()=>setRole(w.id,"admin")} />
+                  : <>
+                      {w.role==="admin"
+                        ? <button className="btn btn-sm" onClick={()=>setRole(w.id,"worker")}>Fjern admin</button>
+                        : <button className="btn btn-sm" onClick={()=>setRole(w.id,"admin")}>Gjør til admin</button>}
+                      <Confirm className="btn btn-sm" label="Gjør til eier" ask="Trykk igjen – gi eier" onConfirm={()=>setRole(w.id,"owner")} />
+                    </>}
               </div>
-              <div className="pwline">
-                <input className="in" type="text" placeholder="nytt passord" value={pw[w.id]||""} onChange={e=>setPw(s=>({ ...s, [w.id]:e.target.value }))} />
-                <button className="btn btn-sm" onClick={()=>setPassword(w.id)}>Sett</button>
-              </div>
+              {!isOwnerRow &&
+                <div className="pwline">
+                  <input className="in" type="text" placeholder="nytt passord" value={pw[w.id]||""} onChange={e=>setPw(s=>({ ...s, [w.id]:e.target.value }))} />
+                  <button className="btn btn-sm" onClick={()=>setPassword(w.id)}>Sett</button>
+                </div>}
             </div>
-          ))}
+          ); })}
         </div>}
     </div>
   );
