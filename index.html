@@ -11,6 +11,23 @@
 <link rel="manifest" href="manifest.json" />
 <link rel="apple-touch-icon" href="icon-180.png" />
 
+<script>
+/* Sett tema FØR siden tegnes – hindrer hvitt blink i mørkt tema (gjelder både nettside og PWA) */
+(function () {
+  try {
+    var t = localStorage.getItem("kitchen_theme_v1");
+    if (t !== "light" && t !== "dark") {
+      t = (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+    }
+    document.documentElement.setAttribute("data-theme", t);
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute("content", t === "dark" ? "#1B1F22" : "#C9CED1");
+  } catch (e) {
+    document.documentElement.setAttribute("data-theme", "light");
+  }
+})();
+</script>
+
 <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 <script src="https://unpkg.com/@supabase/supabase-js@2.45.0"></script>
@@ -194,6 +211,103 @@
   .center-note{min-height:100dvh;display:grid;place-items:center;padding:24px;}
   .foot-note{text-align:center;font-size:11px;color:#9AA1A6;padding:18px;}
   @media (prefers-reduced-motion: reduce){*{transition:none !important;}}
+
+  /* ---- tema-bryter ---- */
+  .themebtn{flex:none;width:38px;height:38px;display:grid;place-items:center;border-radius:9px;cursor:pointer;
+    color:#5A6166;background:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.85);padding:0;}
+  .themebtn:active{transform:scale(.96);}
+  .themebtn svg{display:block;width:18px;height:18px;}
+  .themebtn.float{position:fixed;top:calc(env(safe-area-inset-top) + 12px);right:14px;z-index:30;}
+  .topbtns{display:flex;align-items:center;gap:9px;flex:none;}
+
+  /* =====================================================
+     MØRKT TEMA – aktiveres via <html data-theme="dark">
+     ===================================================== */
+  :root[data-theme="dark"]{
+    --bg:#15181A; --surface:#1E2327; --ink:#E8ECEE; --muted:#9AA2A8;
+    --line:#2B3236; --line-strong:#3B4248;
+    --done:#36B96D; --done-deep:#2C9C59; --done-tint:#16271C;
+    --alert-ink:#FF9166; --alert-bg:#2E1A12; --alert-line:#5A3320;
+    --warn-ink:#E8B24E; --warn-bg:#2C2410; --warn-line:#4A3D18;
+  }
+  [data-theme="dark"] .themebtn{color:#C7CDD1;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.12);}
+
+  /* stål-header → børstet mørkt metall */
+  [data-theme="dark"] .steel{
+    background:repeating-linear-gradient(0deg, rgba(255,255,255,0) 0, rgba(255,255,255,.04) 1px, rgba(0,0,0,.20) 2px, rgba(255,255,255,0) 3px),
+      linear-gradient(180deg,#262B2E 0%,#1C2023 46%,#181B1E 56%,#21262A 100%);
+    box-shadow:0 2px 12px rgba(0,0,0,.5);}
+  [data-theme="dark"] .brand h1{color:#EEF2F3;}
+  [data-theme="dark"] .brand .who{color:#AEB6BB;}
+  [data-theme="dark"] .who .role{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.14);color:#C7CDD1;}
+  [data-theme="dark"] .logout{color:#C7CDD1;background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.14);}
+  [data-theme="dark"] .offbar{color:#FF9166;}
+
+  /* faner + chips */
+  [data-theme="dark"] .tab{color:#9AA2A8;}
+  [data-theme="dark"] .tab.on{background:#2F363B;color:#FFFFFF;border-color:#4A5258;}
+  [data-theme="dark"] .chip{color:#9AA2A8;}
+  [data-theme="dark"] .chip.on{background:#2F363B;color:#FFFFFF;border-color:#4A5258;}
+  [data-theme="dark"] .chip.add{color:var(--done);border-color:#2C5238;}
+
+  /* felt + knapper */
+  [data-theme="dark"] input.in, [data-theme="dark"] select.in{background:#171B1E;}
+  [data-theme="dark"] input.in:focus, [data-theme="dark"] select.in:focus{background:#20262A;}
+  [data-theme="dark"] input.in::placeholder{color:#6B7378;}
+  [data-theme="dark"] .btn-sm{background:#2A3034;color:#D7DCDF;}
+  [data-theme="dark"] .btn-danger{background:#171B1E;}
+  [data-theme="dark"] .daynav input[type=date]{background:#171B1E;}
+  [data-theme="dark"] .daynav input[type=date]:focus{background:#20262A;}
+  [data-theme="dark"] .daynav .nav{background:#171B1E;color:#C7CDD1;}
+  [data-theme="dark"] .iconbtn{background:#171B1E;color:#C7CDD1;}
+
+  /* meldinger */
+  [data-theme="dark"] .msg.err{color:#FF9166;}
+  [data-theme="dark"] .msg.ok{color:#6FD89A;border-color:#234A33;}
+  [data-theme="dark"] .msg.info{background:#20262A;color:#AEB6BB;}
+
+  /* prep / lister */
+  [data-theme="dark"] .pitem .check{background:#171B1E;}
+  [data-theme="dark"] .pitem.done .pbody .pt{color:#7E948A;}
+  [data-theme="dark"] .pdel{background:#171B1E;color:#7E878D;}
+  [data-theme="dark"] .stamp{color:#6FD89A;border-color:#234A33;}
+  [data-theme="dark"] .alert .ico{background:#1E2327;}
+  [data-theme="dark"] .alert .txt span{color:#FF9166;}
+
+  /* temp */
+  [data-theme="dark"] .unit.avvik{background:#241813;}
+  [data-theme="dark"] .unit-last{color:#9AA2A8;}
+  [data-theme="dark"] .tbadge.t-ok{color:#6FD89A;border-color:#234A33;}
+  [data-theme="dark"] .histrow{color:#9AA2A8;}
+
+  /* tavle */
+  [data-theme="dark"] .msgcard.pinned{border-color:var(--warn-line);}
+
+  /* brukere */
+  [data-theme="dark"] .wrow{background:#171B1E;}
+  [data-theme="dark"] .r-admin{background:#272445;color:#B7B0F0;border-color:#3A3560;}
+  [data-theme="dark"] .r-worker{background:#2A3034;color:#AEB6BB;}
+
+  /* logg */
+  [data-theme="dark"] .stat{background:#171B1E;}
+  [data-theme="dark"] .dayhead{color:#AEB6BB;}
+  [data-theme="dark"] .b-done{color:#6FD89A;border-color:#234A33;}
+  [data-theme="dark"] .b-undo{background:#2A3034;color:#9AA2A8;}
+  [data-theme="dark"] .b-reset{background:#262C30;color:#C7CDD1;}
+
+  /* eyebrow + faint tekst */
+  [data-theme="dark"] .eyebrow{color:#8B949A;}
+  [data-theme="dark"] .pmeta,
+  [data-theme="dark"] .empty,
+  [data-theme="dark"] .hint2,
+  [data-theme="dark"] .msgmeta,
+  [data-theme="dark"] .llist,
+  [data-theme="dark"] .lmeta,
+  [data-theme="dark"] .foot-note{color:#7E878D;}
+  [data-theme="dark"] .row{color:#9AA2A8;}
+
+  /* login */
+  [data-theme="dark"] .login-card .logo .mark{background:#2F363B;color:#FFFFFF;box-shadow:0 4px 16px rgba(0,0,0,.55);}
 </style>
 </head>
 <body>
@@ -225,6 +339,14 @@ const SKEY = "kitchen_session_v1";
 const loadSession = ()=>{ try{ const r=S.getItem(SKEY); return r?JSON.parse(r):null; }catch(e){ return null; } };
 const saveSession = s=>{ try{ S.setItem(SKEY, JSON.stringify(s)); }catch(e){} };
 const clearSession = ()=>{ try{ S.removeItem(SKEY); }catch(e){} };
+
+const THEME_KEY = "kitchen_theme_v1";
+const getStoredTheme = ()=>{ try{ const t=S.getItem(THEME_KEY); return (t==="light"||t==="dark")?t:null; }catch(e){ return null; } };
+const systemTheme = ()=>{ try{ return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark":"light"; }catch(e){ return "light"; } };
+function applyTheme(t){
+  try{ document.documentElement.setAttribute("data-theme", t); }catch(e){}
+  try{ const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content", t==="dark" ? "#1B1F22" : "#C9CED1"); }catch(e){}
+}
 
 async function rpc(fn, args){
   const { data, error } = await db.rpc(fn, args||{});
@@ -299,6 +421,23 @@ async function saveOrShare(file){
   return false;
 }
 
+/* ---------- tema-bryter ---------- */
+function ThemeToggle({theme, onToggle, className}){
+  const dark = theme==="dark";
+  return (
+    <button type="button" className={"themebtn"+(className?(" "+className):"")} onClick={onToggle}
+      aria-label={dark?"Bytt til lyst tema":"Bytt til mørkt tema"} title={dark?"Lyst tema":"Mørkt tema"}>
+      {dark
+        ? <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="4.2" /><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.1 5.1l1.4 1.4M17.5 17.5l1.4 1.4M18.9 5.1l-1.4 1.4M6.5 17.5l-1.4 1.4" />
+          </svg>
+        : <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <path d="M21 12.9A8.5 8.5 0 1 1 11.1 3a6.6 6.6 0 0 0 9.9 9.9z" />
+          </svg>}
+    </button>
+  );
+}
+
 /* ---------- confirm ---------- */
 function Confirm({label, ask, onConfirm, className}){
   const [armed,setArmed]=useState(false); const t=useRef(null);
@@ -314,7 +453,7 @@ function Confirm({label, ask, onConfirm, className}){
 }
 
 /* ---------- LOGIN ---------- */
-function Login({onLogin}){
+function Login({onLogin, theme, onToggleTheme}){
   const [u,setU]=useState(""); const [p,setP]=useState("");
   const [err,setErr]=useState(""); const [busy,setBusy]=useState(false);
   async function submit(){
@@ -327,7 +466,9 @@ function Login({onLogin}){
   }
   const onKey = e => { if(e.key==="Enter") submit(); };
   return (
-    <div className="login-hero"><div className="login-card">
+    <div className="login-hero">
+      {onToggleTheme && <ThemeToggle theme={theme} onToggle={onToggleTheme} className="float" />}
+      <div className="login-card">
       <div className="logo"><div className="mark">K</div><h1>Kjøkken</h1><p>Logg inn for å fortsette</p></div>
       <div className="panel">
         {err && <div className="msg err">{err}</div>}
@@ -963,7 +1104,7 @@ function WorkersPage({session, onAuthFail}){
 }
 
 /* ---------- SHELL ---------- */
-function Shell({session, onLogout}){
+function Shell({session, onLogout, theme, onToggleTheme}){
   const isOwner = session.role === "owner";
   const [tab,setTab]=useState("prep");
   const [online,setOnline]=useState(typeof navigator!=="undefined" ? navigator.onLine : true);
@@ -983,7 +1124,10 @@ function Shell({session, onLogout}){
             <h1>Kjøkken</h1>
             <div className="who">{session.display_name}<span className="role">{ROLE_LABEL[session.role]||session.role}</span></div>
           </div>
-          <button className="logout" onClick={logout}>Logg ut</button>
+          <div className="topbtns">
+            <ThemeToggle theme={theme} onToggle={onToggleTheme} />
+            <button className="logout" onClick={logout}>Logg ut</button>
+          </div>
         </div>
         {!online && <div className="offbar">Frakoblet – avhuking og endringer krever nett</div>}
       </div>
@@ -1006,12 +1150,27 @@ function Shell({session, onLogout}){
 function App(){
   const [session,setSession]=useState(loadSession());
   const logout = ()=>{ clearSession(); setSession(null); };
+
+  const [theme,setTheme]=useState(()=> getStoredTheme() || systemTheme());
+  const explicit = useRef(getStoredTheme()!==null);
+  useEffect(()=>{ applyTheme(theme); },[theme]);
+  useEffect(()=>{
+    if(explicit.current) return;            // følg systemet til brukeren velger selv
+    let mq; try{ mq=window.matchMedia("(prefers-color-scheme: dark)"); }catch(e){ return; }
+    const onCh=()=>{ if(!explicit.current) setTheme(mq.matches?"dark":"light"); };
+    if(mq.addEventListener) mq.addEventListener("change",onCh); else if(mq.addListener) mq.addListener(onCh);
+    return ()=>{ if(mq.removeEventListener) mq.removeEventListener("change",onCh); else if(mq.removeListener) mq.removeListener(onCh); };
+  },[]);
+  const toggleTheme = ()=>{ explicit.current=true; setTheme(prev=>{ const next=prev==="dark"?"light":"dark"; try{ S.setItem(THEME_KEY,next); }catch(e){} return next; }); };
+
   if(!CONFIGURED){
     return (<div className="center-note"><div className="login-card">
       <div className="msg info"><b>Nesten klar.</b><br/>Lim inn Supabase-URL og anon-nøkkel øverst i koden, og kjør SQL-en i Supabase.</div>
     </div></div>);
   }
-  return session ? <Shell session={session} onLogout={logout} /> : <Login onLogin={setSession} />;
+  return session
+    ? <Shell session={session} onLogout={logout} theme={theme} onToggleTheme={toggleTheme} />
+    : <Login onLogin={setSession} theme={theme} onToggleTheme={toggleTheme} />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
